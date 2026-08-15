@@ -1,0 +1,92 @@
+{% extends "admin/base.html" %}
+{% block title %}Check-Out Desk{% endblock %}
+{% block page_title %}Check-Out Desk{% endblock %}
+
+{% block content %}
+<div class="panel">
+    <div class="panel-head">
+        <h3 class="panel-title">Find a Checked-In Guest</h3>
+        <span class="panel-count">Search currently checked-in reservations</span>
+    </div>
+    <div class="panel-body">
+        <form method="post" action="{{ url_for('admin.check_out') }}" class="toolbar-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="form-group">
+                <input type="text" name="q" value="{{ q }}" class="form-control form-control-lg" placeholder="Search by reservation code, guest name, phone or room number...">
+            </div>
+            <button type="submit" class="btn btn-navy btn-lg">Search</button>
+        </form>
+    </div>
+</div>
+
+{% if searched %}
+<div class="panel">
+    <div class="panel-head">
+        <h3 class="panel-title">Search Results</h3>
+        <span class="panel-count">{{ results|length }} found</span>
+    </div>
+    <div class="table-wrap">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Guest</th>
+                    <th>Room</th>
+                    <th>Check-In</th>
+                    <th>Check-Out Date</th>
+                    <th>Balance</th>
+                    <th class="th-actions">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for res in results %}
+                <tr>
+                    <td><a href="{{ url_for('admin.check_out_detail', reservation_id=res.id) }}" class="table-link">{{ res.reservation_code }}</a></td>
+                    <td>
+                        {{ res.guest.full_name }}
+                        <div class="table-sub">{{ res.guest.phone or '—' }}</div>
+                    </td>
+                    <td>{{ res.room.room_number if res.room else '—' }}</td>
+                    <td>{{ res.check_in_date.strftime('%b %d, %Y') }}</td>
+                    <td>{{ res.check_out_date.strftime('%b %d, %Y') }}</td>
+                    <td>
+                        {% if res.remaining_amount > 0 %}
+                        <span class="badge badge-danger">{{ res.remaining_amount|money }} due</span>
+                        {% else %}
+                        <span class="badge badge-success">Settled</span>
+                        {% endif %}
+                    </td>
+                    <td class="td-actions">
+                        <a href="{{ url_for('admin.check_out_detail', reservation_id=res.id) }}" class="btn btn-sm btn-gold">Check Out</a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7">
+                        <div class="empty-state">
+                            <div class="empty-icon">🔍</div>
+                            <h4>No checked-in guests found</h4>
+                            <p>No checked-in reservations match your search for "{{ q }}".</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+{% if not searched %}
+<div class="panel">
+    <div class="panel-body">
+        <div class="empty-state">
+            <div class="empty-icon">🧳</div>
+            <h4>Departures</h4>
+            <p>Enter a reservation code, guest name, phone number, or room number above to begin the check-out process.</p>
+            <p class="muted">Only reservations with <strong>checked-in</strong> status can be checked out.</p>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

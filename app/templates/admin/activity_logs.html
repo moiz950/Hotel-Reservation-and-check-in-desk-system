@@ -1,0 +1,78 @@
+{% extends "admin/base.html" %}
+{% block title %}Activity Logs{% endblock %}
+{% block page_title %}Activity Logs{% endblock %}
+
+{% block content %}
+<div class="panel">
+    <div class="panel-head">
+        <h3 class="panel-title">System Activity Log</h3>
+        <span class="panel-count">{{ pagination.total }} entries</span>
+    </div>
+    <div class="panel-body">
+        {% if pagination.items %}
+        <div class="table-wrap">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>When</th>
+                        <th>User</th>
+                        <th>Action</th>
+                        <th>Entity</th>
+                        <th>Details</th>
+                        <th>IP Address</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in pagination.items %}
+                    <tr>
+                        <td>{{ log.created_at.strftime('%b %d, %Y %H:%M:%S') }}</td>
+                        <td>
+                            {% if log.user %}
+                            <strong>{{ log.user.full_name }}</strong>
+                            <div class="table-sub">@{{ log.user.username }}</div>
+                            {% else %}
+                            <span class="table-sub">System</span>
+                            {% endif %}
+                        </td>
+                        <td><span class="code-badge">{{ log.action }}</span></td>
+                        <td>
+                            {% if log.entity_type %}
+                            <span class="badge badge-info">{{ log.entity_type|replace('_', ' ')|title }}</span>
+                            {% if log.entity_id %}<span class="table-sub">#{{ log.entity_id }}</span>{% endif %}
+                            {% else %}
+                            <span class="table-sub">—</span>
+                            {% endif %}
+                        </td>
+                        <td class="table-sub">{{ log.details|truncate(120) if log.details else '—' }}</td>
+                        <td class="table-sub">{{ log.ip_address or '—' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if pagination.pages > 1 %}
+        <div class="pagination">
+            {% if pagination.has_prev %}
+            <a href="{{ url_for('admin.activity_logs', page=pagination.prev_num) }}" class="page-link">&laquo; Prev</a>
+            {% else %}
+            <span class="page-link disabled">&laquo; Prev</span>
+            {% endif %}
+            <span class="page-info">Page {{ pagination.page }} of {{ pagination.pages }}</span>
+            {% if pagination.has_next %}
+            <a href="{{ url_for('admin.activity_logs', page=pagination.next_num) }}" class="page-link">Next &raquo;</a>
+            {% else %}
+            <span class="page-link disabled">Next &raquo;</span>
+            {% endif %}
+        </div>
+        {% endif %}
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">📋</div>
+            <h3>No activity recorded</h3>
+            <p>Every administrative action is logged here for audit and security purposes.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Admin{% endblock %} — {{ settings.get('hotel_name', 'Grand Meridian Hotel') }}</title>
+    {% if settings.get('favicon') %}
+    <link rel="icon" href="{{ settings.get('favicon') }}" type="image/x-icon">
+    {% endif %}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+    <!-- ===== Dynamic theme (admin-controlled) ===== -->
+    <style id="theme-style">
+      :root {
+        --theme-primary: {{ theme.theme_primary_color }};
+        --theme-secondary: {{ theme.theme_secondary_color }};
+        --theme-bg: {{ theme.theme_background_color }};
+        --theme-text: {{ theme.theme_text_color }};
+      }
+      body { background-color: var(--theme-bg); color: var(--theme-text); }
+      .site-header, .site-footer { background-color: var(--theme-primary); }
+      .btn-gold, .btn-primary, .btn-navy { background-color: var(--theme-primary); border-color: var(--theme-primary); }
+      .btn-gold:hover, .btn-primary:hover, .btn-navy:hover { background-color: var(--theme-secondary); border-color: var(--theme-secondary); }
+      .btn-outline, .btn-outline-light { color: var(--theme-primary); border-color: var(--theme-primary); }
+      .btn-outline:hover, .btn-outline-light:hover { background-color: var(--theme-primary); color: #fff; }
+      .promo-section { background: var(--theme-primary) !important; }
+      .btn { border-radius: {{ '999px' if theme.theme_button_style == 'pill' else ('0' if theme.theme_button_style == 'square' else '8px') }}; }
+      {% if theme.theme_mode == 'dark' %}
+      body { background-color: #121212; color: #e0e0e0; }
+      .site-header, .site-footer { background-color: #1a1a1a; }
+      .panel, .card, .room-card, .service-card { background-color: #1e1e1e; color: #e0e0e0; }
+      {% endif %}
+    </style>
+    {% block head %}{% endblock %}
+</head>
+<body class="admin-body">
+    <div class="admin-shell">
+        <!-- ===== Sidebar ===== -->
+        <aside class="admin-sidebar" id="adminSidebar">
+            <div class="sidebar-brand">
+                {% if settings.get('logo') %}
+                <img src="{{ settings.get('logo') }}" alt="Logo" class="sidebar-logo">
+                {% else %}
+                <span class="sidebar-mark">GM</span>
+                {% endif %}
+                <div class="sidebar-brand-text">
+                    <strong>{{ settings.get('hotel_name', 'Hotel') }}</strong>
+                    <small>Admin Panel</small>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="{{ url_for('admin.dashboard') }}" class="side-link {% if request.endpoint == 'admin.dashboard' %}active{% endif %}">
+                    <span class="side-icon">▦</span> Dashboard
+                </a>
+
+                <div class="side-group">Front Desk</div>
+                <a href="{{ url_for('admin.check_in') }}" class="side-link {% if request.endpoint in ['admin.check_in', 'admin.check_in_detail'] %}active{% endif %}">
+                    <span class="side-icon">⇥</span> Check-In Desk
+                </a>
+                <a href="{{ url_for('admin.check_out') }}" class="side-link {% if request.endpoint in ['admin.check_out', 'admin.check_out_detail'] %}active{% endif %}">
+                    <span class="side-icon">⇤</span> Check-Out Desk
+                </a>
+                <a href="{{ url_for('admin.calendar') }}" class="side-link {% if request.endpoint == 'admin.calendar' %}active{% endif %}">
+                    <span class="side-icon">▤</span> Booking Calendar
+                </a>
+
+                <div class="side-group">Management</div>
+                <a href="{{ url_for('admin.rooms') }}" class="side-link {% if request.endpoint in ['admin.rooms', 'admin.room_new', 'admin.room_edit', 'admin.room_images', 'admin.room_image_delete', 'admin.room_image_primary'] %}active{% endif %}">
+                    <span class="side-icon">▣</span> Rooms
+                </a>
+                <a href="{{ url_for('admin.room_types') }}" class="side-link {% if request.endpoint in ['admin.room_types', 'admin.room_type_new', 'admin.room_type_edit'] %}active{% endif %}">
+                    <span class="side-icon">▧</span> Room Types
+                </a>
+                <a href="{{ url_for('admin.reservations') }}" class="side-link {% if request.endpoint in ['admin.reservations', 'admin.reservation_new', 'admin.reservation_detail', 'admin.reservation_edit'] %}active{% endif %}">
+                    <span class="side-icon">▤</span> Reservations
+                </a>
+                <a href="{{ url_for('admin.guests') }}" class="side-link {% if request.endpoint in ['admin.guests', 'admin.guest_new', 'admin.guest_detail', 'admin.guest_edit'] %}active{% endif %}">
+                    <span class="side-icon">◉</span> Guests
+                </a>
+
+                <div class="side-group">Operations</div>
+                <a href="{{ url_for('admin.housekeeping') }}" class="side-link {% if request.endpoint in ['admin.housekeeping', 'admin.housekeeping_new'] %}active{% endif %}">
+                    <span class="side-icon">✧</span> Housekeeping
+                </a>
+                <a href="{{ url_for('admin.maintenance') }}" class="side-link {% if request.endpoint in ['admin.maintenance', 'admin.maintenance_new'] %}active{% endif %}">
+                    <span class="side-icon">⚒</span> Maintenance
+                </a>
+
+                <div class="side-group">Finance</div>
+                <a href="{{ url_for('admin.payments') }}" class="side-link {% if request.endpoint in ['admin.payments', 'admin.payment_new'] %}active{% endif %}">
+                    <span class="side-icon">$</span> Payments
+                </a>
+                <a href="{{ url_for('admin.invoices') }}" class="side-link {% if request.endpoint in ['admin.invoices', 'admin.invoice_detail', 'admin.invoice_print'] %}active{% endif %}">
+                    <span class="side-icon">▤</span> Invoices
+                </a>
+                <a href="{{ url_for('admin.reports') }}" class="side-link {% if request.endpoint == 'admin.reports' %}active{% endif %}">
+                    <span class="side-icon">▥</span> Reports
+                </a>
+
+                {% if current_user.is_admin %}
+                <div class="side-group">Administration</div>
+                <a href="{{ url_for('admin.staff') }}" class="side-link {% if request.endpoint in ['admin.staff', 'admin.staff_new', 'admin.staff_edit'] %}active{% endif %}">
+                    <span class="side-icon">◈</span> Staff
+                </a>
+                <a href="{{ url_for('admin.account') }}" class="side-link {% if request.endpoint == 'admin.account' %}active{% endif %}">
+                    <span class="side-icon">⚙</span> My Account
+                </a>
+                {% endif %}
+
+                <div class="side-group">Website</div>
+                <a href="{{ url_for('admin.content') }}" class="side-link {% if request.endpoint in ['admin.content', 'admin.hero_banners', 'admin.hero_banner_new', 'admin.hero_banner_edit', 'admin.promo_banners', 'admin.promo_banner_new', 'admin.promo_banner_edit', 'admin.branding', 'admin.branding_delete_logo', 'admin.branding_delete_favicon', 'admin.content_settings', 'admin.services', 'admin.service_new', 'admin.service_edit', 'admin.contact_messages'] %}active{% endif %}">
+                    <span class="side-icon">◈</span> Content
+                </a>
+                <a href="{{ url_for('admin.special_offers') }}" class="side-link {% if request.endpoint in ['admin.special_offers', 'admin.special_offer_new', 'admin.special_offer_edit', 'admin.special_offer_toggle', 'admin.special_offer_delete'] %}active{% endif %}">
+                    <span class="side-icon">★</span> Special Offers
+                </a>
+                <a href="{{ url_for('admin.theme') }}" class="side-link {% if request.endpoint == 'admin.theme' %}active{% endif %}">
+                    <span class="side-icon">◐</span> Theme
+                </a>
+                <a href="{{ url_for('admin.notifications') }}" class="side-link {% if request.endpoint in ['admin.notifications'] %}active{% endif %}">
+                    <span class="side-icon">◉</span> Notifications
+                </a>
+                <a href="{{ url_for('admin.activity_logs') }}" class="side-link {% if request.endpoint == 'admin.activity_logs' %}active{% endif %}">
+                    <span class="side-icon">▤</span> Activity Logs
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <a href="{{ url_for('public.home') }}" class="side-link">↗ View Website</a>
+                <a href="{{ url_for('auth.logout') }}" class="side-link">⏻ Sign Out</a>
+            </div>
+        </aside>
+
+        <!-- ===== Main ===== -->
+        <div class="admin-main">
+            <header class="admin-topbar">
+                <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">☰</button>
+                <div class="topbar-title">{% block page_title %}Admin{% endblock %}</div>
+                <div class="topbar-user">
+                    <span class="topbar-avatar">{{ (current_user.full_name or current_user.username)[0]|upper }}</span>
+                    <div class="topbar-user-text">
+                        <strong>{{ current_user.full_name or current_user.username }}</strong>
+                        <small>{{ current_user.role|title }}</small>
+                    </div>
+                </div>
+            </header>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                <div class="flash-container">
+                    {% for category, message in messages %}
+                    <div class="flash flash-{{ category }}">
+                        <span>{{ message }}</span>
+                        <button class="flash-close" aria-label="Dismiss">&times;</button>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            {% endwith %}
+
+            <main class="admin-content">
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

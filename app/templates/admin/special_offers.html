@@ -1,0 +1,70 @@
+{% extends "admin/base.html" %}
+{% block title %}Special Offers{% endblock %}
+{% block page_title %}Special Offers{% endblock %}
+
+{% block content %}
+<div class="toolbar">
+    <div class="toolbar-left">
+        <h1 class="page-title">Special Offers</h1>
+        <p class="page-subtitle">Create time-limited promotions shown on the website.</p>
+    </div>
+    <div class="toolbar-actions">
+        <a href="{{ url_for('admin.special_offer_new') }}" class="btn btn-primary">+ New Offer</a>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-body">
+        {% if offers %}
+        <div class="table-wrap">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Offer</th>
+                        <th>Period</th>
+                        <th>Status</th>
+                        <th class="td-actions">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for offer in offers %}
+                    <tr>
+                        <td>
+                            <strong>{{ offer.title }}</strong>
+                            {% if offer.badge_text %}<span class="badge badge-gold">{{ offer.badge_text }}</span>{% endif %}
+                            {% if offer.discount_details %}<div class="table-sub">{{ offer.discount_details }}</div>{% endif %}
+                        </td>
+                        <td>
+                            {% if offer.start_date %}{{ offer.start_date }}{% else %}—{% endif %}
+                            →
+                            {% if offer.end_date %}{{ offer.end_date }}{% else %}—{% endif %}
+                        </td>
+                        <td>
+                            {% if offer.is_active %}
+                                <span class="status-badge status-confirmed">Active</span>
+                            {% else %}
+                                <span class="status-badge status-cancelled">Hidden</span>
+                            {% endif %}
+                        </td>
+                        <td class="td-actions">
+                            <a href="{{ url_for('admin.special_offer_edit', offer_id=offer.id) }}" class="btn btn-sm btn-ghost">Edit</a>
+                            <form method="post" action="{{ url_for('admin.special_offer_toggle', offer_id=offer.id) }}" class="inline-form">
+                                <button type="submit" class="btn btn-sm btn-ghost">{% if offer.is_active %}Hide{% else %}Show{% endif %}</button>
+                            </form>
+                            <form method="post" action="{{ url_for('admin.special_offer_delete', offer_id=offer.id) }}" class="inline-form" onsubmit="return confirm('Delete this offer?');">
+                                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <p>No special offers yet. Create your first promotion.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

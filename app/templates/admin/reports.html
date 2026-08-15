@@ -1,0 +1,391 @@
+{% extends "admin/base.html" %}
+{% block title %}Reports{% endblock %}
+{% block page_title %}Reports{% endblock %}
+
+{% block content %}
+<div class="panel">
+    <div class="panel-head">
+        <h3 class="panel-title">Generate Report</h3>
+    </div>
+    <div class="panel-body">
+        <form method="get" action="{{ url_for('admin.reports') }}" class="toolbar-form toolbar-form-wrap">
+            <div class="form-group">
+                <label class="form-label">Report Type</label>
+                <select name="type" class="form-control">
+                    {% set types = [
+                        ('reservations', 'Reservations'),
+                        ('occupancy', 'Occupancy'),
+                        ('revenue', 'Revenue'),
+                        ('payments', 'Payments'),
+                        ('guests', 'New Guests'),
+                        ('checkins', 'Check-Ins'),
+                        ('checkouts', 'Check-Outs'),
+                        ('cancellations', 'Cancellations'),
+                        ('room_performance', 'Room Performance')
+                    ] %}
+                    {% for value, label in types %}
+                    <option value="{{ value }}" {{ 'selected' if report_type == value }}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Date From</label>
+                <input type="date" name="date_from" value="{{ date_from.isoformat() }}" class="form-control">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Date To</label>
+                <input type="date" name="date_to" value="{{ date_to.isoformat() }}" class="form-control">
+            </div>
+            <div class="form-group form-group-btn">
+                <label class="form-label">&nbsp;</label>
+                <button type="submit" class="btn btn-gold">Run Report</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Summary cards -->
+{% if summary %}
+<div class="stat-grid">
+    {% if report_type in ('reservations', 'revenue', 'guests', 'checkins', 'checkouts', 'cancellations') %}
+    <div class="stat-card">
+        <div class="stat-icon stat-navy">📊</div>
+        <div>
+            <div class="stat-value">{{ summary.get('count', 0) }}</div>
+            <div class="stat-label">Total Records</div>
+        </div>
+    </div>
+    {% endif %}
+    {% if report_type in ('reservations', 'revenue', 'checkouts') %}
+    <div class="stat-card">
+        <div class="stat-icon stat-gold">💰</div>
+        <div>
+            <div class="stat-value">{{ summary.get('total', 0)|money }}</div>
+            <div class="stat-label">Total Amount</div>
+        </div>
+    </div>
+    {% endif %}
+    {% if report_type == 'occupancy' %}
+    <div class="stat-card">
+        <div class="stat-icon stat-navy">🛏️</div>
+        <div>
+            <div class="stat-value">{{ summary.get('occupied_nights', 0) }}</div>
+            <div class="stat-label">Occupied Nights</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon stat-gold">📐</div>
+        <div>
+            <div class="stat-value">{{ summary.get('occupancy_rate', 0) }}%</div>
+            <div class="stat-label">Occupancy Rate</div>
+        </div>
+    </div>
+    {% endif %}
+    {% if report_type == 'payments' %}
+    <div class="stat-card">
+        <div class="stat-icon stat-success">✅</div>
+        <div>
+            <div class="stat-value">{{ summary.get('paid', 0) }}</div>
+            <div class="stat-label">Paid</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon stat-gold">🟡</div>
+        <div>
+            <div class="stat-value">{{ summary.get('partial', 0) }}</div>
+            <div class="stat-label">Partially Paid</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon stat-danger">🔴</div>
+        <div>
+            <div class="stat-value">{{ summary.get('pending', 0) }}</div>
+            <div class="stat-label">Unpaid</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon stat-navy">💳</div>
+        <div>
+            <div class="stat-value">{{ summary.get('outstanding', 0)|money }}</div>
+            <div class="stat-label">Outstanding</div>
+        </div>
+    </div>
+    {% endif %}
+    {% if report_type == 'room_performance' %}
+    <div class="stat-card">
+        <div class="stat-icon stat-navy">🏨</div>
+        <div>
+            <div class="stat-value">{{ summary.get('total', 0) }}</div>
+            <div class="stat-label">Total Rooms</div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endif %}
+
+<div class="panel">
+    <div class="panel-head">
+        <h3 class="panel-title">
+            {% for value, label in types %}
+                {% if report_type == value %}{{ label }}{% endif %}
+            {% endfor %}
+            Report
+            <span class="panel-count">{{ date_from.strftime('%b %d, %Y') }} → {{ date_to.strftime('%b %d, %Y') }}</span>
+        </h3>
+    </div>
+    <div class="table-wrap">
+        {% if report_type == 'reservations' %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Guest</th>
+                    <th>Room</th>
+                    <th>Created</th>
+                    <th>Stay</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                    <th class="th-actions">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                <tr>
+                    <td><a href="{{ url_for('admin.reservation_detail', reservation_id=row.id) }}" class="table-link">{{ row.reservation_code }}</a></td>
+                    <td>{{ row.guest.full_name }}</td>
+                    <td>{{ row.room.room_number if row.room else '—' }}</td>
+                    <td>{{ row.created_at.strftime('%b %d, %Y') }}</td>
+                    <td>{{ row.check_in_date.strftime('%b %d') }} → {{ row.check_out_date.strftime('%b %d') }}</td>
+                    <td>{{ row.total_amount|money }}</td>
+                    <td><span class="badge {{ row.status|badge }}">{{ row.status|title }}</span></td>
+                    <td class="td-actions"><a href="{{ url_for('admin.reservation_detail', reservation_id=row.id) }}" class="btn btn-sm btn-ghost">View</a></td>
+                </tr>
+                {% else %}
+                <tr><td colspan="8">{% include 'admin/_report_empty.html' %}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        {% elif report_type == 'occupancy' %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Room</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>Reservations</th>
+                    <th>Rate</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                <tr>
+                    <td>{{ row.room_number }}</td>
+                    <td>{{ row.room_type.name if row.room_type else '—' }}</td>
+                    <td><span class="badge {{ row.status|badge }}">{{ row.status|title }}</span></td>
+                    <td>{{ row.reservations.count() }}</td>
+                    <td>{{ row.price|money }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="5">{% include 'admin/_report_empty.html' %}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        {% elif report_type == 'revenue' %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Payment Code</th>
+                    <th>Reservation</th>
+                    <th>Guest</th>
+                    <th>Amount</th>
+                    <th>Method</th>
+                    <th>Received</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                <tr>
+                    <td><span class="code-badge">{{ row.payment_code }}</span></td>
+                    <td><a href="{{ url_for('admin.reservation_detail', reservation_id=row.reservation.id) }}" class="table-link">{{ row.reservation.reservation_code }}</a></td>
+                    <td>{{ row.guest.full_name }}</td>
+                    <td><strong>{{ row.amount|money }}</strong></td>
+                    <td><span class="badge badge-info">{{ row.method }}</span></td>
+                    <td>{{ row.received_at.strftime('%b %d, %Y %H:%M') }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="6">{% include 'admin/_report_empty.html' %}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        {% elif report_type == 'payments' %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Guest</th>
+                    <th>Total</th>
+                    <th>Paid</th>
+                    <th>Remaining</th>
+                    <th>Payment Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                <tr>
+                    <td><a href="{{ url_for('admin.reservation_detail', reservation_id=row.id) }}" class="table-link">{{ row.reservation_code }}</a></td>
+                    <td>{{ row.guest.full_name }}</td>
+                    <td>{{ row.total_amount|money }}</td>
+                    <td class="text-success">{{ row.paid_amount|money }}</td>
+                    <td class="{{ 'text-danger' if row.remaining_amount > 0 else 'text-success' }}">{{ row.remaining_amount|money }}</td>
+                    <td><span class="badge {{ row.payment_status|badge }}">{{ row.payment_status|title }}</span></td>
+                </tr>
+                {% else %}
+                <tr><td colspan="6">{% include 'admin/_report_empty.html' %}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        {% elif report_type == 'guests' %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>City</th>
+                    <th>Joined</th>
+                    <th class="th-actions">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                <tr>
+                    <td><span class="code-badge">{{ row.guest_code }}</span></td>
+                    <td><a href="{{ url_for('admin.guest_detail', guest_id=row.id) }}" class="table-link">{{ row.full_name }}</a></td>
+                    <td>{{ row.email or '—' }}</td>
+                    <td>{{ row.phone or '—' }}</td>
+                    <td>{{ row.city or '—' }}</td>
+                    <td>{{ row.created_at.strftime('%b %d, %Y') }}</td>
+                    <td class="td-actions"><a href="{{ url_for('admin.guest_detail', guest_id=row.id) }}" class="btn btn-sm btn-ghost">View</a></td>
+                </tr>
+                {% else %}
+                <tr><td colspan="7">{% include 'admin/_report_empty.html' %}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        {% elif report_type == 'checkins' %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Reservation</th>
+                    <th>Guest</th>
+                    <th>Room</th>
+                    <th>Checked In</th>
+                    <th>By</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                <tr>
+                    <td><a href="{{ url_for('admin.reservation_detail', reservation_id=row.reservation.id) }}" class="table-link">{{ row.reservation.reservation_code }}</a></td>
+                    <td>{{ row.reservation.guest.full_name }}</td>
+                    <td>{{ row.reservation.room.room_number if row.reservation.room else '—' }}</td>
+                    <td>{{ row.checked_in_at.strftime('%b %d, %Y %H:%M') }}</td>
+                    <td>{{ row.staff.full_name if row.staff else '—' }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="5">{% include 'admin/_report_empty.html' %}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        {% elif report_type == 'checkouts' %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Reservation</th>
+                    <th>Guest</th>
+                    <th>Room</th>
+                    <th>Checked Out</th>
+                    <th>Final Total</th>
+                    <th>By</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                <tr>
+                    <td><a href="{{ url_for('admin.reservation_detail', reservation_id=row.reservation.id) }}" class="table-link">{{ row.reservation.reservation_code }}</a></td>
+                    <td>{{ row.reservation.guest.full_name }}</td>
+                    <td>{{ row.reservation.room.room_number if row.reservation.room else '—' }}</td>
+                    <td>{{ row.checked_out_at.strftime('%b %d, %Y %H:%M') }}</td>
+                    <td><strong>{{ row.final_total|money }}</strong></td>
+                    <td>{{ row.staff.full_name if row.staff else '—' }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="6">{% include 'admin/_report_empty.html' %}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        {% elif report_type == 'cancellations' %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Guest</th>
+                    <th>Room</th>
+                    <th>Created</th>
+                    <th>Stay</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                <tr>
+                    <td><a href="{{ url_for('admin.reservation_detail', reservation_id=row.id) }}" class="table-link">{{ row.reservation_code }}</a></td>
+                    <td>{{ row.guest.full_name }}</td>
+                    <td>{{ row.room.room_number if row.room else '—' }}</td>
+                    <td>{{ row.created_at.strftime('%b %d, %Y') }}</td>
+                    <td>{{ row.check_in_date.strftime('%b %d') }} → {{ row.check_out_date.strftime('%b %d') }}</td>
+                    <td>{{ row.total_amount|money }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="6">{% include 'admin/_report_empty.html' %}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        {% elif report_type == 'room_performance' %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Room</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>Reservations</th>
+                    <th>Rate</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                <tr>
+                    <td>{{ row.room_number }}</td>
+                    <td>{{ row.room_type.name if row.room_type else '—' }}</td>
+                    <td><span class="badge {{ row.status|badge }}">{{ row.status|title }}</span></td>
+                    <td>{{ row.reservations.count() }}</td>
+                    <td>{{ row.price|money }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="5">{% include 'admin/_report_empty.html' %}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

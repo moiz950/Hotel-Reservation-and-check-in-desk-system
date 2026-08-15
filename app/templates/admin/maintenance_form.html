@@ -1,0 +1,42 @@
+{% extends "admin/base.html" %}
+{% block title %}New Maintenance Task{% endblock %}
+{% block page_title %}New Maintenance Task{% endblock %}
+
+{% block content %}
+<div class="panel panel-narrow">
+    <div class="panel-head">
+        <h3 class="panel-title">Create Maintenance Task</h3>
+    </div>
+    <form method="post" action="" class="stack-form" novalidate>
+        {{ form.hidden_tag() }}
+        <div class="form-row">
+            <div class="form-group">
+                {{ form.room_id.label }}
+                {{ form.room_id(class="form-control") }}
+                {% for error in form.room_id.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                {{ form.reason.label }}
+                {{ form.reason(class="form-control", placeholder="e.g. Air conditioning not working") }}
+                {% for error in form.reason.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                {{ form.notes.label }}
+                {{ form.notes(class="form-control", rows="4", placeholder="Detailed description of the issue") }}
+                {% for error in form.notes.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+            </div>
+        </div>
+        <div class="alert alert-warning">
+            Creating a maintenance task marks the room as <strong>Maintenance</strong>, taking it out of service until the task is completed.
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-gold">{{ form.submit.label.text }}</button>
+            <a href="{{ url_for('admin.maintenance') }}" class="btn btn-ghost">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

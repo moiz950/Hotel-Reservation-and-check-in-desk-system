@@ -1,0 +1,204 @@
+{% extends "admin/base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<!-- ===== Stat cards ===== -->
+<div class="stat-grid">
+    <div class="stat-card">
+        <span class="stat-icon stat-icon-navy">▣</span>
+        <div class="stat-info">
+            <strong>{{ stats.total_rooms }}</strong>
+            <span>Total Rooms</span>
+        </div>
+    </div>
+    <div class="stat-card">
+        <span class="stat-icon stat-icon-green">✓</span>
+        <div class="stat-info">
+            <strong>{{ stats.available }}</strong>
+            <span>Available</span>
+        </div>
+    </div>
+    <div class="stat-card">
+        <span class="stat-icon stat-icon-blue">▤</span>
+        <div class="stat-info">
+            <strong>{{ stats.reserved }}</strong>
+            <span>Reserved</span>
+        </div>
+    </div>
+    <div class="stat-card">
+        <span class="stat-icon stat-icon-gold">◉</span>
+        <div class="stat-info">
+            <strong>{{ stats.occupied }}</strong>
+            <span>Occupied</span>
+        </div>
+    </div>
+    <div class="stat-card">
+        <span class="stat-icon stat-icon-amber">✧</span>
+        <div class="stat-info">
+            <strong>{{ stats.cleaning }}</strong>
+            <span>Cleaning</span>
+        </div>
+    </div>
+    <div class="stat-card">
+        <span class="stat-icon stat-icon-red">⚒</span>
+        <div class="stat-info">
+            <strong>{{ stats.maintenance }}</strong>
+            <span>Maintenance</span>
+        </div>
+    </div>
+    <div class="stat-card">
+        <span class="stat-icon stat-icon-teal">⇥</span>
+        <div class="stat-info">
+            <strong>{{ stats.today_checkins }}</strong>
+            <span>Check-Ins Today</span>
+        </div>
+    </div>
+    <div class="stat-card">
+        <span class="stat-icon stat-icon-purple">⇤</span>
+        <div class="stat-info">
+            <strong>{{ stats.today_checkouts }}</strong>
+            <span>Check-Outs Today</span>
+        </div>
+    </div>
+    <div class="stat-card">
+        <span class="stat-icon stat-icon-orange">$</span>
+        <div class="stat-info">
+            <strong>{{ stats.pending_payments|money }}</strong>
+            <span>Pending Payments</span>
+        </div>
+    </div>
+    <div class="stat-card">
+        <span class="stat-icon stat-icon-green">▲</span>
+        <div class="stat-info">
+            <strong>{{ stats.revenue|money }}</strong>
+            <span>Revenue Today</span>
+        </div>
+    </div>
+</div>
+
+<!-- ===== Quick actions ===== -->
+<div class="quick-actions">
+    <a href="{{ url_for('admin.reservation_new') }}" class="qa-btn qa-gold">+ New Reservation</a>
+    <a href="{{ url_for('admin.check_in') }}" class="qa-btn qa-navy">⇥ Check-In</a>
+    <a href="{{ url_for('admin.check_out') }}" class="qa-btn qa-navy">⇤ Check-Out</a>
+    <a href="{{ url_for('admin.payments') }}" class="qa-btn qa-navy">$ Payments</a>
+    <a href="{{ url_for('admin.housekeeping_new') }}" class="qa-btn qa-navy">✧ Housekeeping</a>
+    <a href="{{ url_for('admin.maintenance_new') }}" class="qa-btn qa-navy">⚒ Maintenance</a>
+</div>
+
+<!-- ===== Recent activity ===== -->
+<div class="dash-grid">
+    <div class="panel">
+        <div class="panel-head">
+            <h3>Recent Reservations</h3>
+            <a href="{{ url_for('admin.reservations') }}" class="panel-link">View all</a>
+        </div>
+        <div class="table-wrap">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Guest</th>
+                        <th>Room</th>
+                        <th>Dates</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for res in recent_reservations %}
+                    <tr>
+                        <td><a href="{{ url_for('admin.reservation_detail', reservation_id=res.id) }}">{{ res.reservation_code }}</a></td>
+                        <td>{{ res.guest.full_name }}</td>
+                        <td>{{ res.room.room_number if res.room else '—' }}</td>
+                        <td>{{ res.check_in_date.strftime('%d %b') }} → {{ res.check_out_date.strftime('%d %b') }}</td>
+                        <td>{{ res.total_amount|money }}</td>
+                        <td><span class="badge badge-{{ res.status|badge }}">{{ res.status|replace('_', ' ')|title }}</span></td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="6" class="empty-cell">No reservations yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-head">
+            <h3>Recent Payments</h3>
+            <a href="{{ url_for('admin.payments') }}" class="panel-link">View all</a>
+        </div>
+        <div class="table-wrap">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Reservation</th>
+                        <th>Amount</th>
+                        <th>Method</th>
+                        <th>Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for pay in recent_payments %}
+                    <tr>
+                        <td>{{ pay.payment_code }}</td>
+                        <td><a href="{{ url_for('admin.reservation_detail', reservation_id=pay.reservation_id) }}">{{ pay.reservation.reservation_code }}</a></td>
+                        <td>{{ pay.amount|money }}</td>
+                        <td>{{ pay.method|replace('_', ' ')|title }}</td>
+                        <td>{{ pay.received_at.strftime('%d %b %H:%M') }}</td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="5" class="empty-cell">No payments yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="dash-grid">
+    <div class="panel">
+        <div class="panel-head">
+            <h3>Recent Activity</h3>
+            <a href="{{ url_for('admin.activity_logs') }}" class="panel-link">View all</a>
+        </div>
+        <ul class="activity-list">
+            {% for log in recent_activity %}
+            <li>
+                <span class="activity-dot"></span>
+                <div>
+                    <strong>{{ log.action }}</strong>
+                    <p>{{ log.details or '' }}</p>
+                    <small>{{ log.created_at.strftime('%d %b %Y, %H:%M') }} · {{ log.user.full_name if log.user else 'System' }}</small>
+                </div>
+            </li>
+            {% else %}
+            <li class="empty-cell">No activity recorded yet.</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="panel">
+        <div class="panel-head">
+            <h3>Notifications</h3>
+            <a href="{{ url_for('admin.notifications') }}" class="panel-link">View all</a>
+        </div>
+        <ul class="activity-list">
+            {% for note in recent_notifications %}
+            <li>
+                <span class="activity-dot dot-{{ note.category|badge }}"></span>
+                <div>
+                    <strong>{{ note.title }}</strong>
+                    <p>{{ note.message or '' }}</p>
+                    <small>{{ note.created_at.strftime('%d %b %Y, %H:%M') }}</small>
+                </div>
+            </li>
+            {% else %}
+            <li class="empty-cell">No notifications yet.</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endblock %}

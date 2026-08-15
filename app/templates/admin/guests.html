@@ -1,0 +1,122 @@
+{% extends "admin/base.html" %}
+{% block title %}Guests{% endblock %}
+{% block page_title %}Guest Management{% endblock %}
+
+{% block content %}
+<div class="toolbar">
+    <form method="get" action="{{ url_for('admin.guests') }}" class="toolbar-form">
+        <div class="form-group">
+            <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="Search by name, email, phone or code...">
+        </div>
+        <button type="submit" class="btn btn-navy">Search</button>
+        {% if q %}
+        <a href="{{ url_for('admin.guests') }}" class="btn btn-ghost">Clear</a>
+        {% endif %}
+    </form>
+    <div class="toolbar-actions">
+        <a href="{{ url_for('admin.guest_new') }}" class="btn btn-gold">+ Add Guest</a>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-head">
+        <h3 class="panel-title">All Guests</h3>
+        <span class="panel-count">{{ pagination.total }} guest{{ 's' if pagination.total != 1 else '' }}</span>
+    </div>
+    <div class="table-wrap">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Guest</th>
+                    <th>Contact</th>
+                    <th>Location</th>
+                    <th>ID</th>
+                    <th>Reservations</th>
+                    <th>Status</th>
+                    <th class="th-actions">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for guest in pagination.items %}
+                <tr>
+                    <td><span class="code-badge">{{ guest.guest_code }}</span></td>
+                    <td>
+                        <a href="{{ url_for('admin.guest_detail', guest_id=guest.id) }}" class="table-link">{{ guest.full_name }}</a>
+                        <div class="table-sub">Joined {{ guest.created_at.strftime('%b %d, %Y') }}</div>
+                    </td>
+                    <td>
+                        <div>{{ guest.email or '—' }}</div>
+                        <div class="table-sub">{{ guest.phone or '—' }}</div>
+                    </td>
+                    <td>
+                        {% if guest.city or guest.country %}
+                        <div>{{ guest.city or '' }}{{ ', ' if guest.city and guest.country else '' }}{{ guest.country or '' }}</div>
+                        {% else %}
+                        <span class="muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if guest.id_type %}
+                        <div>{{ guest.id_type }}</div>
+                        <div class="table-sub">{{ guest.id_number or '—' }}</div>
+                        {% else %}
+                        <span class="muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% set count = guest.reservations.count() %}
+                        <span class="badge badge-info">{{ count }}</span>
+                    </td>
+                    <td>
+                        {% if guest.current_reservation %}
+                        <span class="badge badge-success">In House</span>
+                        {% else %}
+                        <span class="badge badge-muted">No Stay</span>
+                        {% endif %}
+                    </td>
+                    <td class="td-actions">
+                        <a href="{{ url_for('admin.guest_detail', guest_id=guest.id) }}" class="btn btn-sm btn-ghost">View</a>
+                        <a href="{{ url_for('admin.guest_edit', guest_id=guest.id) }}" class="btn btn-sm btn-navy">Edit</a>
+                        <form method="post" action="{{ url_for('admin.guest_delete', guest_id=guest.id) }}" class="inline-form" onsubmit="return confirm('Delete this guest? This cannot be undone.');">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="8">
+                        <div class="empty-state">
+                            <div class="empty-icon">👤</div>
+                            <h4>No guests found</h4>
+                            <p>{% if q %}No guests match your search for "{{ q }}".{% else %}Add your first guest to get started.{% endif %}</p>
+                            {% if q %}
+                            <a href="{{ url_for('admin.guests') }}" class="btn btn-navy">Clear Search</a>
+                            {% else %}
+                            <a href="{{ url_for('admin.guest_new') }}" class="btn btn-gold">+ Add Guest</a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if pagination.pages > 1 %}
+    <div class="pagination">
+        {% if pagination.has_prev %}
+        <a href="{{ url_for('admin.guests', page=pagination.prev_num, q=q) }}" class="page-link">&laquo; Prev</a>
+        {% else %}
+        <span class="page-link disabled">&laquo; Prev</span>
+        {% endif %}
+        <span class="page-info">Page {{ pagination.page }} of {{ pagination.pages }}</span>
+        {% if pagination.has_next %}
+        <a href="{{ url_for('admin.guests', page=pagination.next_num, q=q) }}" class="page-link">Next &raquo;</a>
+        {% else %}
+        <span class="page-link disabled">Next &raquo;</span>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

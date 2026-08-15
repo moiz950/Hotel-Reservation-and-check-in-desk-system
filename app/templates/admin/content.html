@@ -1,0 +1,38 @@
+{% extends "admin/base.html" %}
+{% block title %}Website Content{% endblock %}
+{% block page_title %}Website Content{% endblock %}
+
+{% block content %}
+<div class="content-grid">
+    <a href="{{ url_for('admin.hero_banners') }}" class="content-card">
+        <div class="content-icon">🖼️</div>
+        <h3>Hero Banners</h3>
+        <p>Manage the rotating banner slider on the homepage.</p>
+    </a>
+    <a href="{{ url_for('admin.promo_banners') }}" class="content-card">
+        <div class="content-icon">🎁</div>
+        <h3>Promo Banners</h3>
+        <p>Special offers and promotional banners shown on the homepage.</p>
+    </a>
+    <a href="{{ url_for('admin.branding') }}" class="content-card">
+        <div class="content-icon">✨</div>
+        <h3>Branding</h3>
+        <p>Logo, favicon, hotel name and tagline.</p>
+    </a>
+    <a href="{{ url_for('admin.content_settings') }}" class="content-card">
+        <div class="content-icon">⚙️</div>
+        <h3>Settings</h3>
+        <p>Contact details, social links, homepage text, policies and more.</p>
+    </a>
+    <a href="{{ url_for('admin.services') }}" class="content-card">
+        <div class="content-icon">🛎️</div>
+        <h3>Services</h3>
+        <p>The amenities and services displayed across the website.</p>
+    </a>
+    <a href="{{ url_for('admin.contact_messages') }}" class="content-card">
+        <div class="content-icon">✉️</div>
+        <h3>Contact Messages</h3>
+        <p>Messages received through the website contact form.</p>
+    </a>
+</div>
+{% endblock %}

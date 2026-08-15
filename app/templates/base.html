@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ settings.get('hotel_name', 'Grand Meridian Hotel') }}{% endblock %}</title>
+    <meta name="description" content="{{ settings.get('hotel_description', '') }}">
+    {% if settings.get('favicon') %}
+    <link rel="icon" href="{{ settings.get('favicon') }}" type="image/x-icon">
+    {% endif %}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/public.css') }}">
+    <!-- ===== Dynamic theme (admin-controlled) ===== -->
+    <style id="theme-style">
+      :root {
+        --theme-primary: {{ theme.theme_primary_color }};
+        --theme-secondary: {{ theme.theme_secondary_color }};
+        --theme-bg: {{ theme.theme_background_color }};
+        --theme-text: {{ theme.theme_text_color }};
+      }
+      body { background-color: var(--theme-bg); color: var(--theme-text); }
+      .site-header, .site-footer { background-color: var(--theme-primary); }
+      .btn-gold, .btn-primary, .btn-navy { background-color: var(--theme-primary); border-color: var(--theme-primary); }
+      .btn-gold:hover, .btn-primary:hover, .btn-navy:hover { background-color: var(--theme-secondary); border-color: var(--theme-secondary); }
+      .btn-outline, .btn-outline-light { color: var(--theme-primary); border-color: var(--theme-primary); }
+      .btn-outline:hover, .btn-outline-light:hover { background-color: var(--theme-primary); color: #fff; }
+      .promo-section { background: var(--theme-primary) !important; }
+      .btn { border-radius: {{ '999px' if theme.theme_button_style == 'pill' else ('0' if theme.theme_button_style == 'square' else '8px') }}; }
+      /* Keep header/footer text legible on the (often dark) theme-primary background */
+      .site-header .brand-text strong,
+      .site-header .brand-text small,
+      .site-header .nav-link,
+      .site-header .nav-link.active,
+      .site-header .nav-link:hover { color: #ffffff; }
+      .site-header .brand-mark { color: #ffffff; }
+      .site-header .nav-toggle span { background: #ffffff; }
+      .site-header .nav-link::after { background: var(--theme-secondary); }
+      .site-footer, .site-footer * { color: rgba(255,255,255,0.85); }
+      .site-footer .footer-title { color: #ffffff; }
+      {% if theme.theme_mode == 'dark' %}
+      body { background-color: #121212; color: #e0e0e0; }
+      .site-header, .site-footer { background-color: #1a1a1a; }
+      .panel, .card, .room-card, .service-card { background-color: #1e1e1e; color: #e0e0e0; }
+      {% endif %}
+    </style>
+    {% block head %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+    <!-- ===== Header ===== -->
+    <header class="site-header" id="siteHeader">
+        <div class="container header-inner">
+            <a href="{{ url_for('public.home') }}" class="brand">
+                {% if settings.get('logo') %}
+                <img src="{{ settings.get('logo') }}" alt="{{ settings.get('hotel_name', 'Hotel') }}" class="brand-logo">
+                {% else %}
+                <span class="brand-mark">GM</span>
+                {% endif %}
+                <span class="brand-text">
+                    <strong>{{ settings.get('hotel_name', 'Grand Meridian Hotel') }}</strong>
+                    <small>{{ settings.get('tagline', '') }}</small>
+                </span>
+            </a>
+
+            <nav class="main-nav" id="mainNav" aria-label="Main navigation">
+                <a href="{{ url_for('public.home') }}" class="nav-link {% if request.endpoint == 'public.home' %}active{% endif %}">Home</a>
+                <a href="{{ url_for('public.rooms') }}" class="nav-link {% if request.endpoint in ['public.rooms', 'public.room_detail'] %}active{% endif %}">Rooms</a>
+                <a href="{{ url_for('public.about') }}" class="nav-link {% if request.endpoint == 'public.about' %}active{% endif %}">About</a>
+                <a href="{{ url_for('public.services') }}" class="nav-link {% if request.endpoint == 'public.services' %}active{% endif %}">Services</a>
+                <a href="{{ url_for('public.contact') }}" class="nav-link {% if request.endpoint == 'public.contact' %}active{% endif %}">Contact</a>
+                {% if current_user.is_authenticated %}
+                    {% if current_user.is_staff_member %}
+                    <a href="{{ url_for('admin.dashboard') }}" class="nav-link">Dashboard</a>
+                    {% endif %}
+                    <a href="{{ url_for('auth.logout') }}" class="nav-link">Sign Out</a>
+                {% else %}
+                    <a href="{{ url_for('auth.login') }}" class="nav-link">Sign In</a>
+                {% endif %}
+                <a href="{{ url_for('public.reservation') }}" class="btn btn-gold nav-cta">Book Now</a>
+            </nav>
+
+            <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation" aria-expanded="false">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </header>
+
+    <!-- ===== Flash messages ===== -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="flash-container">
+            {% for category, message in messages %}
+            <div class="flash flash-{{ category }}">
+                <span>{{ message }}</span>
+                <button class="flash-close" aria-label="Dismiss">&times;</button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- ===== Page content ===== -->
+    <main class="site-main">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- ===== Footer ===== -->
+    <footer class="site-footer">
+        <div class="container footer-grid">
+            <div class="footer-col">
+                <h4 class="footer-title">{{ settings.get('hotel_name', 'Grand Meridian Hotel') }}</h4>
+                <p>{{ settings.get('footer_about', settings.get('hotel_description', '')) }}</p>
+                <div class="footer-social">
+                    {% if settings.get('facebook') %}<a href="{{ settings.get('facebook') }}" target="_blank" rel="noopener" aria-label="Facebook">f</a>{% endif %}
+                    {% if settings.get('twitter') %}<a href="{{ settings.get('twitter') }}" target="_blank" rel="noopener" aria-label="Twitter">t</a>{% endif %}
+                    {% if settings.get('instagram') %}<a href="{{ settings.get('instagram') }}" target="_blank" rel="noopener" aria-label="Instagram">i</a>{% endif %}
+                    {% if settings.get('linkedin') %}<a href="{{ settings.get('linkedin') }}" target="_blank" rel="noopener" aria-label="LinkedIn">in</a>{% endif %}
+                </div>
+            </div>
+            <div class="footer-col">
+                <h4 class="footer-title">Quick Links</h4>
+                <ul class="footer-links">
+                    <li><a href="{{ url_for('public.home') }}">Home</a></li>
+                    <li><a href="{{ url_for('public.rooms') }}">Rooms & Suites</a></li>
+                    <li><a href="{{ url_for('public.reservation') }}">Reserve a Room</a></li>
+                    <li><a href="{{ url_for('public.about') }}">About Us</a></li>
+                    <li><a href="{{ url_for('public.services') }}">Services</a></li>
+                    <li><a href="{{ url_for('public.contact') }}">Contact</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4 class="footer-title">Contact</h4>
+                <ul class="footer-contact">
+                    <li>{{ settings.get('address', '') }}</li>
+                    <li><a href="tel:{{ settings.get('phone', '') }}">{{ settings.get('phone', '') }}</a></li>
+                    <li><a href="mailto:{{ settings.get('email', '') }}">{{ settings.get('email', '') }}</a></li>
+                    <li>Check-in: {{ settings.get('check_in_time', '14:00') }} &middot; Check-out: {{ settings.get('check_out_time', '12:00') }}</li>
+                    <li>{{ settings.get('front_desk_hours', 'Open 24 Hours') }}</li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4 class="footer-title">Policies</h4>
+                <p class="footer-policies">{{ settings.get('hotel_policies', '') }}</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <div class="container">
+                <p>{{ settings.get('copyright_text', '© All rights reserved.') }}</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/public.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+{% block title %}{{ settings.get('hotel_name', 'Grand Meridian Hotel') }} — {{ settings.get('tagline', 'Experience Comfort. Discover Luxury.') }}{% endblock %}
+
+{% block content %}
+<!-- ===== Hero Slider ===== -->
+<section class="hero" id="heroSlider">
+    {% if banners %}
+        {% for banner in banners %}
+        <div class="hero-slide {% if loop.first %}active{% endif %} anim-{{ banner.animation }}"
+             style="{% if banner.image %}background-image: url('{{ banner.image }}');{% endif %}">
+            <div class="hero-overlay"></div>
+            <div class="container hero-content">
+                <span class="hero-eyebrow">{{ settings.get('tagline', '') }}</span>
+                <h1 class="hero-title">{{ banner.title }}</h1>
+                {% if banner.subtitle %}<p class="hero-subtitle">{{ banner.subtitle }}</p>{% endif %}
+                {% if banner.description %}<p class="hero-description">{{ banner.description }}</p>{% endif %}
+                <div class="hero-actions">
+                    {% if banner.cta_text %}
+                    <a href="{{ banner.cta_url or url_for('public.reservation') }}" class="btn btn-gold btn-lg">{{ banner.cta_text }}</a>
+                    {% endif %}
+                    {% if banner.cta2_text %}
+                    <a href="{{ banner.cta2_url or url_for('public.rooms') }}" class="btn btn-outline-light btn-lg">{{ banner.cta2_text }}</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        {% if banners|length > 1 %}
+        <div class="hero-dots">
+            {% for banner in banners %}
+            <button class="hero-dot {% if loop.first %}active{% endif %}" data-slide="{{ loop.index0 }}" aria-label="Slide {{ loop.index }}"></button>
+            {% endfor %}
+        </div>
+        <button class="hero-arrow hero-prev" aria-label="Previous slide">&#10094;</button>
+        <button class="hero-arrow hero-next" aria-label="Next slide">&#10095;</button>
+        {% endif %}
+    {% else %}
+        <div class="hero-slide active" style="background-image: linear-gradient(135deg, #14213D 0%, #1F4E79 100%);">
+            <div class="hero-overlay"></div>
+            <div class="container hero-content">
+                <span class="hero-eyebrow">{{ settings.get('tagline', '') }}</span>
+                <h1 class="hero-title">{{ settings.get('homepage_intro_title', 'Welcome to Grand Meridian Hotel') }}</h1>
+                <p class="hero-description">{{ settings.get('homepage_intro_text', '') }}</p>
+                <div class="hero-actions">
+                    <a href="{{ url_for('public.reservation') }}" class="btn btn-gold btn-lg">Reserve Your Stay</a>
+                    <a href="{{ url_for('public.rooms') }}" class="btn btn-outline-light btn-lg">Explore Rooms</a>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</section>
+
+<!-- ===== Reservation Search Bar ===== -->
+<section class="reservation-bar">
+    <div class="container">
+        <form action="{{ url_for('public.reservation') }}" method="get" class="reservation-search">
+            <div class="search-field">
+                <label for="check_in">Check-In</label>
+                <input type="date" id="check_in" name="check_in" value="{{ today().isoformat() }}" min="{{ today().isoformat() }}">
+            </div>
+            <div class="search-field">
+                <label for="check_out">Check-Out</label>
+                <input type="date" id="check_out" name="check_out" value="{{ today().isoformat() }}" min="{{ today().isoformat() }}">
+            </div>
+            <div class="search-field">
+                <label for="guests">Guests</label>
+                <select id="guests" name="guests">
+                    {% for n in range(1, 7) %}
+                    <option value="{{ n }}">{{ n }} {% if n == 1 %}Guest{% else %}Guests{% endif %}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="search-field">
+                <label for="room_type">Room Type</label>
+                <select id="room_type" name="room_type">
+                    <option value="">Any Type</option>
+                    {% for rt in room_types %}
+                    <option value="{{ rt.id }}">{{ rt.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn btn-gold btn-lg search-btn">Check Availability</button>
+        </form>
+    </div>
+</section>
+
+<!-- ===== Intro ===== -->
+<section class="section intro-section">
+    <div class="container intro-grid">
+        <div class="intro-text">
+            <span class="section-eyebrow">Welcome</span>
+            <h2 class="section-title">{{ settings.get('homepage_intro_title', 'Welcome to Grand Meridian Hotel') }}</h2>
+            <p>{{ settings.get('homepage_intro_text', '') }}</p>
+            <a href="{{ url_for('public.about') }}" class="btn btn-outline">Learn More About Us</a>
+        </div>
+        <div class="intro-stats">
+            <div class="stat-card"><strong>24/7</strong><span>Front Desk</span></div>
+            <div class="stat-card"><strong>100+</strong><span>Elegant Rooms</span></div>
+            <div class="stat-card"><strong>5★</strong><span>Service</span></div>
+            <div class="stat-card"><strong>0</strong><span>Hidden Fees</span></div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== Featured Rooms ===== -->
+<section class="section featured-section">
+    <div class="container">
+        <div class="section-head">
+            <span class="section-eyebrow">Accommodation</span>
+            <h2 class="section-title">Featured Rooms & Suites</h2>
+            <p>Elegantly appointed rooms designed for comfort, work, and rest.</p>
+        </div>
+        <div class="room-grid">
+            {% for rt in featured %}
+            <article class="room-card">
+                <a href="{{ url_for('public.room_detail', room_type_id=rt.id) }}" class="room-card-media">
+                    {% if rt.image %}
+                    <img src="{{ rt.image }}" alt="{{ rt.name }}" loading="lazy">
+                    {% else %}
+                    <div class="room-card-placeholder">{{ rt.name }}</div>
+                    {% endif %}
+                    <span class="room-card-price">{{ settings.get('currency', '$') }}{{ '%.0f'|format(rt.base_price) }}<small>/night</small></span>
+                </a>
+                <div class="room-card-body">
+                    <h3><a href="{{ url_for('public.room_detail', room_type_id=rt.id) }}">{{ rt.name }}</a></h3>
+                    <p class="room-card-meta">
+                        <span>👤 {{ rt.capacity }} guests</span>
+                        {% if rt.bed_type %}<span>🛏 {{ rt.bed_type }}</span>{% endif %}
+                    </p>
+                    <p class="room-card-desc">{{ (rt.description or '')[:120] }}{% if rt.description and rt.description|length > 120 %}…{% endif %}</p>
+                    <a href="{{ url_for('public.room_detail', room_type_id=rt.id) }}" class="btn btn-outline btn-sm">View Details</a>
+                </div>
+            </article>
+            {% else %}
+            <p class="empty-note">Rooms are being prepared. Please check back soon.</p>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- ===== Services ===== -->
+<section class="section services-section">
+    <div class="container">
+        <div class="section-head">
+            <span class="section-eyebrow">Amenities</span>
+            <h2 class="section-title">Our Services</h2>
+        </div>
+        <div class="services-grid">
+            {% for service in services %}
+            <div class="service-card">
+                <div class="service-icon">{{ service.icon or '✦' }}</div>
+                <h3>{{ service.name }}</h3>
+                <p>{{ service.description }}</p>
+            </div>
+            {% else %}
+            <p class="empty-note">Our services are being updated.</p>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- ===== Promotions ===== -->
+{% if promos %}
+<section class="section promo-section">
+    <div class="container">
+        <div class="section-head">
+            <span class="section-eyebrow">Offers</span>
+            <h2 class="section-title">Special Offers</h2>
+        </div>
+        <div class="promo-grid">
+            {% for promo in promos %}
+            <article class="promo-card">
+                {% if promo.image %}<img src="{{ promo.image }}" alt="{{ promo.title }}" loading="lazy">{% endif %}
+                <div class="promo-body">
+                    {% if promo.badge_text %}<span class="promo-badge">{{ promo.badge_text }}</span>{% endif %}
+                    <h3>{{ promo.title }}</h3>
+                    <p>{{ promo.description }}</p>
+                    {% if promo.cta_text %}
+                    <a href="{{ promo.cta_url or url_for('public.reservation') }}" class="btn btn-gold btn-sm">{{ promo.cta_text }}</a>
+                    {% endif %}
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- ===== Why Choose Us ===== -->
+<section class="section why-section">
+    <div class="container why-grid">
+        <div class="why-text">
+            <span class="section-eyebrow">The Meridian Difference</span>
+            <h2 class="section-title">{{ settings.get('why_choose_title', 'Why Choose Us') }}</h2>
+            <p>{{ settings.get('why_choose_text', '') }}</p>
+            <a href="{{ url_for('public.reservation') }}" class="btn btn-gold">Reserve Your Stay</a>
+        </div>
+        <div class="why-policies">
+            <h3>Good to Know</h3>
+            <p>{{ settings.get('hotel_policies', '') }}</p>
+            <div class="policy-meta">
+                <p><strong>Check-In:</strong> {{ settings.get('check_in_time', '14:00') }}</p>
+                <p><strong>Check-Out:</strong> {{ settings.get('check_out_time', '12:00') }}</p>
+                <p><strong>Front Desk:</strong> {{ settings.get('front_desk_hours', 'Open 24 Hours') }}</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

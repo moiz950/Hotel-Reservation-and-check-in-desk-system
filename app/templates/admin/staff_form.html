@@ -1,0 +1,76 @@
+{% extends "admin/base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="panel panel-narrow">
+    <div class="panel-head">
+        <h3 class="panel-title">{{ title }}</h3>
+    </div>
+    <form method="post" action="" class="stack-form" novalidate>
+        {{ form.hidden_tag() }}
+        <div class="form-row">
+            <div class="form-group">
+                {{ form.full_name.label }}
+                {{ form.full_name(class="form-control", placeholder="Full name") }}
+                {% for error in form.full_name.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                {{ form.username.label }}
+                {{ form.username(class="form-control", placeholder="Login username") }}
+                {% for error in form.username.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+            </div>
+            <div class="form-group">
+                {{ form.email.label }}
+                {{ form.email(class="form-control", placeholder="staff@example.com") }}
+                {% for error in form.email.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                {{ form.password.label }}
+                {{ form.password(class="form-control", placeholder="Min 6 characters" if not staff else "") }}
+                {% for error in form.password.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+                {% if staff %}<small class="muted">Leave blank to keep the current password.</small>{% endif %}
+            </div>
+            <div class="form-group">
+                {{ form.job_title.label }}
+                {{ form.job_title(class="form-control", placeholder="e.g. Front Desk Officer") }}
+                {% for error in form.job_title.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                {{ form.phone.label }}
+                {{ form.phone(class="form-control", placeholder="Contact number") }}
+                {% for error in form.phone.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+            </div>
+            <div class="form-group form-group-check">
+                {{ form.is_active(class="form-check-input") }}
+                {{ form.is_active.label(class="form-check-label") }}
+                {% for error in form.is_active.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                {{ form.permissions.label }}
+                <div class="permission-grid">
+                    {% for value, label in form.permissions.choices %}
+                    <label class="permission-item">
+                        <input type="checkbox" name="permissions" value="{{ value }}" {{ 'checked' if value in (form.permissions.data or []) else '' }}>
+                        <span>{{ label }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+                {% for error in form.permissions.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+            </div>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-gold">{{ form.submit.label.text }}</button>
+            <a href="{{ url_for('admin.staff') }}" class="btn btn-ghost">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

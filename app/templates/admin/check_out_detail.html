@@ -1,0 +1,120 @@
+{% extends "admin/base.html" %}
+{% block title %}Check-Out {{ reservation.reservation_code }}{% endblock %}
+{% block page_title %}Check-Out Desk{% endblock %}
+
+{% block content %}
+<div class="toolbar">
+    <div class="toolbar-actions">
+        <a href="{{ url_for('admin.check_out') }}" class="btn btn-ghost">&laquo; Back to Search</a>
+        <a href="{{ url_for('admin.reservation_detail', reservation_id=reservation.id) }}" class="btn btn-navy">View Reservation</a>
+        <a href="{{ url_for('admin.invoice_print', invoice_id=reservation.invoices[0].id) if reservation.invoices else '#' }}" class="btn btn-ghost">Print Invoice</a>
+    </div>
+</div>
+
+<div class="detail-grid">
+    <div class="panel">
+        <div class="panel-head">
+            <h3 class="panel-title">Stay Summary</h3>
+            <span class="badge {{ reservation.status|badge }}">{{ reservation.status|title }}</span>
+        </div>
+        <div class="detail-body">
+            <h2 class="detail-name">{{ reservation.reservation_code }}</h2>
+            <p class="detail-code">{{ reservation.guest.full_name }}</p>
+            <div class="detail-list">
+                <div class="detail-item">
+                    <span class="detail-label">Guest</span>
+                    <span class="detail-value">{{ reservation.guest.full_name }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Room</span>
+                    <span class="detail-value">{{ reservation.room.room_number if reservation.room else '—' }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Check-In</span>
+                    <span class="detail-value">{{ reservation.check_in_date.strftime('%A, %b %d, %Y') }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Check-Out</span>
+                    <span class="detail-value">{{ reservation.check_out_date.strftime('%A, %b %d, %Y') }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Nights</span>
+                    <span class="detail-value">{{ reservation.nights }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Payment Status</span>
+                    <span class="detail-value"><span class="badge {{ reservation.payment_status|badge }}">{{ reservation.payment_status|title }}</span></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-head">
+            <h3 class="panel-title">Complete Check-Out</h3>
+        </div>
+        <div class="panel-body">
+            <div class="billing-summary">
+                <div class="billing-row">
+                    <span>Room Charge ({{ reservation.nights }} night{{ 's' if reservation.nights != 1 else '' }})</span>
+                    <span>{{ reservation.room_charge|money }}</span>
+                </div>
+                <div class="billing-row">
+                    <span>Additional Charges</span>
+                    <span>{{ reservation.additional_charges|money }}</span>
+                </div>
+                <div class="billing-row">
+                    <span>Discount</span>
+                    <span>-{{ reservation.discount|money }}</span>
+                </div>
+                <div class="billing-row">
+                    <span>Tax ({{ reservation.tax_rate }}%)</span>
+                    <span>{{ reservation.tax_amount|money }}</span>
+                </div>
+                <div class="billing-row billing-total">
+                    <span>Current Total</span>
+                    <span>{{ reservation.total_amount|money }}</span>
+                </div>
+                <div class="billing-row">
+                    <span>Paid</span>
+                    <span class="text-success">{{ reservation.paid_amount|money }}</span>
+                </div>
+                <div class="billing-row billing-remaining">
+                    <span>Remaining</span>
+                    <span class="{{ 'text-danger' if reservation.remaining_amount > 0 else 'text-success' }}">{{ reservation.remaining_amount|money }}</span>
+                </div>
+            </div>
+
+            <div class="alert alert-info">
+                <p class="muted">Add any last-minute charges or discounts below. Check-out will finalize the bill, mark the reservation as <strong>Checked Out</strong>, and send the room to <strong>Cleaning</strong>.</p>
+            </div>
+
+            <form method="post" action="" class="stack-form" novalidate>
+                {{ form.hidden_tag() }}
+                <div class="form-row">
+                    <div class="form-group">
+                        {{ form.additional_charges.label }}
+                        {{ form.additional_charges(class="form-control", step="0.01") }}
+                        {% for error in form.additional_charges.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+                    </div>
+                    <div class="form-group">
+                        {{ form.discount.label }}
+                        {{ form.discount(class="form-control", step="0.01") }}
+                        {% for error in form.discount.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        {{ form.notes.label }}
+                        {{ form.notes(class="form-control", rows="3", placeholder="Check-out notes (optional)") }}
+                        {% for error in form.notes.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-gold btn-lg">Finalize Check-Out</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

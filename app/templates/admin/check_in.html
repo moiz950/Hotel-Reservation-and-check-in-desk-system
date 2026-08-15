@@ -1,0 +1,86 @@
+{% extends "admin/base.html" %}
+{% block title %}Check-In Desk{% endblock %}
+{% block page_title %}Check-In Desk{% endblock %}
+
+{% block content %}
+<div class="panel">
+    <div class="panel-head">
+        <h3 class="panel-title">Find a Reservation to Check In</h3>
+        <span class="panel-count">Search pending or confirmed reservations</span>
+    </div>
+    <div class="panel-body">
+        <form method="post" action="{{ url_for('admin.check_in') }}" class="toolbar-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="form-group">
+                <input type="text" name="q" value="{{ q }}" class="form-control form-control-lg" placeholder="Search by reservation code, guest name, phone or room number...">
+            </div>
+            <button type="submit" class="btn btn-navy btn-lg">Search</button>
+        </form>
+    </div>
+</div>
+
+{% if searched %}
+<div class="panel">
+    <div class="panel-head">
+        <h3 class="panel-title">Search Results</h3>
+        <span class="panel-count">{{ results|length }} found</span>
+    </div>
+    <div class="table-wrap">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Guest</th>
+                    <th>Room</th>
+                    <th>Check-In Date</th>
+                    <th>Check-Out Date</th>
+                    <th>Status</th>
+                    <th class="th-actions">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for res in results %}
+                <tr>
+                    <td><a href="{{ url_for('admin.check_in_detail', reservation_id=res.id) }}" class="table-link">{{ res.reservation_code }}</a></td>
+                    <td>
+                        {{ res.guest.full_name }}
+                        <div class="table-sub">{{ res.guest.phone or '—' }}</div>
+                    </td>
+                    <td>{{ res.room.room_number if res.room else 'Unassigned' }}</td>
+                    <td>{{ res.check_in_date.strftime('%b %d, %Y') }}</td>
+                    <td>{{ res.check_out_date.strftime('%b %d, %Y') }}</td>
+                    <td><span class="badge {{ res.status|badge }}">{{ res.status|title }}</span></td>
+                    <td class="td-actions">
+                        <a href="{{ url_for('admin.check_in_detail', reservation_id=res.id) }}" class="btn btn-sm btn-gold">Check In</a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7">
+                        <div class="empty-state">
+                            <div class="empty-icon">🔍</div>
+                            <h4>No reservations found</h4>
+                            <p>No pending or confirmed reservations match your search for "{{ q }}".</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+{% if not searched %}
+<div class="panel">
+    <div class="panel-body">
+        <div class="empty-state">
+            <div class="empty-icon">🛎️</div>
+            <h4>Ready for arrivals</h4>
+            <p>Enter a reservation code, guest name, phone number, or room number above to begin the check-in process.</p>
+            <p class="muted">Only reservations with <strong>pending</strong> or <strong>confirmed</strong> status can be checked in.</p>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

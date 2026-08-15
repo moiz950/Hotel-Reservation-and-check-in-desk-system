@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Sign In — {{ settings.get('hotel_name', 'Grand Meridian Hotel') }}{% endblock %}
+
+{% block content %}
+<section class="section auth-section">
+    <div class="container auth-card">
+        <div class="auth-head">
+            {% if settings.get('logo') %}
+            <img src="{{ settings.get('logo') }}" alt="{{ settings.get('hotel_name', 'Hotel') }}" class="auth-logo">
+            {% else %}
+            <span class="brand-mark auth-mark">GM</span>
+            {% endif %}
+            <h1>Welcome Back</h1>
+            <p>Sign in to manage your bookings and account.</p>
+        </div>
+
+        <form method="post" action="{{ url_for('auth.login') }}" class="stack-form">
+            {{ form.hidden_tag() }}
+            <div class="form-group">
+                {{ form.username.label }}
+                {{ form.username(class="form-control", placeholder="Username or email", autofocus=true) }}
+                {% for error in form.username.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+            </div>
+            <div class="form-group">
+                {{ form.password.label }}
+                {{ form.password(class="form-control", placeholder="Your password") }}
+                {% for error in form.password.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+            </div>
+            <div class="form-group form-check">
+                {{ form.remember(class="form-check-input") }}
+                {{ form.remember.label(class="form-check-label") }}
+            </div>
+            <button type="submit" class="btn btn-gold btn-lg btn-block">{{ form.submit.label.text }}</button>
+        </form>
+
+        <p class="auth-alt">New here? <a href="{{ url_for('auth.register') }}">Create an account</a></p>
+    </div>
+</section>
+{% endblock %}

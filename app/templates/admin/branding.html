@@ -1,0 +1,153 @@
+{% extends "admin/base.html" %}
+{% block title %}Branding{% endblock %}
+{% block page_title %}Branding{% endblock %}
+
+{% block content %}
+<div class="toolbar">
+    <div class="toolbar-actions">
+        <a href="{{ url_for('admin.content') }}" class="btn btn-ghost">&laquo; Content</a>
+    </div>
+</div>
+
+<div class="detail-grid">
+    <div class="panel">
+        <div class="panel-head">
+            <h3 class="panel-title">Logo & Favicon</h3>
+        </div>
+        <div class="panel-body">
+            <form method="post" action="{{ url_for('admin.branding') }}" enctype="multipart/form-data" class="stack-form" novalidate>
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="logo">Logo</label>
+                        <input type="file" name="logo" id="logo" accept="image/*" class="form-control">
+                        {% if settings.get('logo') %}
+                        <div class="form-preview">
+                            <img src="{{ url_for('static', filename='uploads/' + settings.get('logo')) }}" alt="Current logo">
+                            <small class="muted">Current logo. Upload a new one to replace it.</small>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label for="favicon">Favicon</label>
+                        <input type="file" name="favicon" id="favicon" accept="image/*" class="form-control">
+                        {% if settings.get('favicon') %}
+                        <div class="form-preview">
+                            <img src="{{ url_for('static', filename='uploads/' + settings.get('favicon')) }}" alt="Current favicon">
+                            <small class="muted">Current favicon. Upload a new one to replace it.</small>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="hotel_name">Hotel Name</label>
+                        <input type="text" name="hotel_name" id="hotel_name" value="{{ settings.get('hotel_name', '') }}" class="form-control">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="tagline">Tagline</label>
+                        <input type="text" name="tagline" id="tagline" value="{{ settings.get('tagline', '') }}" class="form-control">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="hotel_description">Hotel Description</label>
+                        <textarea name="hotel_description" id="hotel_description" rows="4" class="form-control">{{ settings.get('hotel_description', '') }}</textarea>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-gold">Save Branding</button>
+                </div>
+            </form>
+
+            {# Remove buttons live in their OWN forms (HTML does not allow nested forms) #}
+            {% if settings.get('logo') %}
+            <form method="post" action="{{ url_for('admin.branding_delete_logo') }}" class="inline-form" onsubmit="return confirm('Remove the logo?');">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-sm btn-danger">Remove Logo</button>
+            </form>
+            {% endif %}
+            {% if settings.get('favicon') %}
+            <form method="post" action="{{ url_for('admin.branding_delete_favicon') }}" class="inline-form" onsubmit="return confirm('Remove the favicon?');">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-sm btn-danger">Remove Favicon</button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-head">
+            <h3 class="panel-title">Brand Preview</h3>
+        </div>
+        <div class="panel-body">
+            <div class="brand-preview">
+                <div class="brand-preview-head">
+                    {% if settings.get('logo') %}
+                    <img src="{{ url_for('static', filename='uploads/' + settings.get('logo')) }}" alt="Logo" class="brand-preview-logo">
+                    {% else %}
+                    <div class="brand-preview-mark">GM</div>
+                    {% endif %}
+                    <div>
+                        <h2>{{ settings.get('hotel_name', 'Grand Meridian Hotel') }}</h2>
+                        <p>{{ settings.get('tagline', '') }}</p>
+                    </div>
+                </div>
+                <p class="muted">{{ settings.get('hotel_description', '') }}</p>
+            </div>
+            <div class="alert alert-info">
+                <strong>Recommended image sizes:</strong><br>
+                Logo: 240 × 80 px (transparent PNG preferred)<br>
+                Favicon: 32 × 32 px (or 64 × 64 px)
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-head">
+        <h3 class="panel-title">Page Banners</h3>
+    </div>
+    <div class="panel-body">
+        <p class="muted">Upload a banner image for each page. If no image is set, a default gradient is shown. Recommended size: 1920 × 480 px.</p>
+        <form method="post" action="{{ url_for('admin.branding') }}" enctype="multipart/form-data" class="stack-form" novalidate>
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            {% set banners = [
+                ('banner_rooms', 'Rooms & Suites'),
+                ('banner_about', 'About Us'),
+                ('banner_contact', 'Contact Us'),
+                ('banner_services', 'Services')
+            ] %}
+            {% for bkey, blabel in banners %}
+            <div class="form-group">
+                <label for="{{ bkey }}">{{ blabel }} Page Banner</label>
+                <input type="file" name="{{ bkey }}" id="{{ bkey }}" accept="image/*" class="form-control">
+                {% if settings.get(bkey) %}
+                <div class="form-preview">
+                    <img src="{{ settings.get(bkey) }}" alt="{{ blabel }} banner">
+                    <small class="muted">Current banner. Upload a new one to replace it.</small>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+            <div class="form-actions">
+                <button type="submit" class="btn btn-gold">Save Banners</button>
+            </div>
+        </form>
+
+        {# Remove buttons live in their OWN forms (HTML does not allow nested forms) #}
+        <div class="banner-remove-row">
+            {% for bkey, blabel in banners %}
+            {% if settings.get(bkey) %}
+            <form method="post" action="{{ url_for('admin.branding_delete_banner', key=bkey) }}" class="inline-form" onsubmit="return confirm('Remove the {{ blabel }} banner?');">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-sm btn-danger">Remove {{ blabel }} Banner</button>
+            </form>
+            {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

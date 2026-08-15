@@ -1,0 +1,95 @@
+{% extends "admin/base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="panel panel-narrow">
+    <form method="post" class="stack-form">
+        {{ form.hidden_tag() }}
+        <div class="form-row">
+            <div class="form-group">
+                {{ form.guest_id.label }}
+                {{ form.guest_id(class="form-control") }}
+                {% if form.guest_id.choices|length == 0 %}
+                <p class="field-hint">No guests yet. <a href="{{ url_for('admin.guest_new', next='admin.reservation_new') }}">Add a guest first</a>.</p>
+                {% endif %}
+                {% for error in form.guest_id.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+            </div>
+            <div class="form-group">
+                {{ form.room_id.label }}
+                {{ form.room_id(class="form-control") }}
+                {% for error in form.room_id.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                {{ form.check_in_date.label }}
+                {{ form.check_in_date(class="form-control", type="date") }}
+                {% for error in form.check_in_date.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+            </div>
+            <div class="form-group">
+                {{ form.check_out_date.label }}
+                {{ form.check_out_date(class="form-control", type="date") }}
+                {% for error in form.check_out_date.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                {{ form.adults.label }}
+                {{ form.adults(class="form-control") }}
+                {% for error in form.adults.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+            </div>
+            <div class="form-group">
+                {{ form.children.label }}
+                {{ form.children(class="form-control") }}
+                {% for error in form.children.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                {{ form.room_rate.label }}
+                {{ form.room_rate(class="form-control") }}
+                {% for error in form.room_rate.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+            </div>
+            <div class="form-group">
+                {{ form.tax_rate.label }}
+                {{ form.tax_rate(class="form-control") }}
+                {% for error in form.tax_rate.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                {{ form.additional_charges.label }}
+                {{ form.additional_charges(class="form-control") }}
+                {% for error in form.additional_charges.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+            </div>
+            <div class="form-group">
+                {{ form.discount.label }}
+                {{ form.discount(class="form-control") }}
+                {% for error in form.discount.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                {{ form.status.label }}
+                {{ form.status(class="form-control") }}
+                {% for error in form.status.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+            </div>
+            <div class="form-group">
+                {{ form.source.label }}
+                {{ form.source(class="form-control") }}
+                {% for error in form.source.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+            </div>
+        </div>
+        <div class="form-group">
+            {{ form.special_request.label }}
+            {{ form.special_request(class="form-control", rows="3") }}
+            {% for error in form.special_request.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-gold">{{ form.submit.label.text }}</button>
+            <a href="{{ url_for('admin.reservations') }}" class="btn btn-outline">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

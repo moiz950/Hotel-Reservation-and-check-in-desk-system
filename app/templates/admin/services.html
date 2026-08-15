@@ -1,0 +1,76 @@
+{% extends "admin/base.html" %}
+{% block title %}Services{% endblock %}
+{% block page_title %}Website Services{% endblock %}
+
+{% block content %}
+<div class="toolbar">
+    <div class="toolbar-actions">
+        <a href="{{ url_for('admin.content') }}" class="btn btn-ghost">&laquo; Content</a>
+        <a href="{{ url_for('admin.service_new') }}" class="btn btn-navy">+ New Service</a>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-head">
+        <h3 class="panel-title">Services</h3>
+        <span class="panel-count">{{ services|length }} total</span>
+    </div>
+    <div class="panel-body">
+        {% if services %}
+        <div class="table-wrap">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Service</th>
+                        <th>Description</th>
+                        <th>Icon</th>
+                        <th>Order</th>
+                        <th>Status</th>
+                        <th class="th-actions">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for service in services %}
+                    <tr>
+                        <td>
+                            <strong>{{ service.name }}</strong>
+                        </td>
+                        <td class="table-sub">{{ service.description|truncate(80) if service.description else '—' }}</td>
+                        <td>
+                            {% if service.icon %}
+                            <span class="content-icon">{{ service.icon }}</span>
+                            {% else %}
+                            <span class="table-sub">—</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ service.display_order }}</td>
+                        <td>
+                            {% if service.is_active %}
+                            <span class="badge badge-success">Active</span>
+                            {% else %}
+                            <span class="badge badge-muted">Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td class="td-actions">
+                            <a href="{{ url_for('admin.service_edit', service_id=service.id) }}" class="btn btn-ghost btn-sm">Edit</a>
+                            <form method="post" action="{{ url_for('admin.service_delete', service_id=service.id) }}" class="inline-form" onsubmit="return confirm('Delete this service?');">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">🛎️</div>
+            <h3>No services yet</h3>
+            <p>Add services shown on the customer website, such as Spa, Pool, and Restaurant.</p>
+            <a href="{{ url_for('admin.service_new') }}" class="btn btn-gold">Add Your First Service</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

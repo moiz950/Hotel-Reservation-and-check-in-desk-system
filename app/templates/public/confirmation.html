@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Booking Confirmed — {{ settings.get('hotel_name', 'Grand Meridian Hotel') }}{% endblock %}
+
+{% block content %}
+<section class="section confirmation-section">
+    <div class="container confirmation-card">
+        <div class="confirmation-icon">&#10003;</div>
+        <h1>Thank You, {{ reservation.guest.full_name }}!</h1>
+        <p class="confirmation-lead">Your reservation request has been received. Our front desk team will confirm your booking shortly.</p>
+
+        <div class="confirmation-details">
+            <div class="confirmation-row">
+                <span>Reservation Code</span>
+                <strong>{{ reservation.reservation_code }}</strong>
+            </div>
+            <div class="confirmation-row">
+                <span>Room</span>
+                <strong>Room {{ reservation.room.room_number if reservation.room else '—' }} ({{ reservation.room_type.name if reservation.room_type else '—' }})</strong>
+            </div>
+            <div class="confirmation-row">
+                <span>Check-In</span>
+                <strong>{{ reservation.check_in_date.strftime('%A, %d %B %Y') }}</strong>
+            </div>
+            <div class="confirmation-row">
+                <span>Check-Out</span>
+                <strong>{{ reservation.check_out_date.strftime('%A, %d %B %Y') }}</strong>
+            </div>
+            <div class="confirmation-row">
+                <span>Guests</span>
+                <strong>{{ reservation.adults }} adult{{ 's' if reservation.adults != 1 else '' }}{% if reservation.children %} + {{ reservation.children }} child{{ 'ren' if reservation.children != 1 else '' }}{% endif %}</strong>
+            </div>
+            <div class="confirmation-row">
+                <span>Total ({{ reservation.nights }} night{{ 's' if reservation.nights != 1 else '' }})</span>
+                <strong>{{ reservation.total_amount|money }}</strong>
+            </div>
+            <div class="confirmation-row">
+                <span>Payment Status</span>
+                <strong><span class="badge badge-{{ reservation.payment_status|badge }}">{{ reservation.payment_status|replace('_', ' ')|title }}</span></strong>
+            </div>
+        </div>
+
+        {% if reservation.special_request %}
+        <div class="confirmation-note">
+            <strong>Special Request:</strong> {{ reservation.special_request }}
+        </div>
+        {% endif %}
+
+        <div class="confirmation-actions">
+            <a href="{{ url_for('public.home') }}" class="btn btn-gold">Back to Home</a>
+            <a href="{{ url_for('public.rooms') }}" class="btn btn-outline">Browse More Rooms</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,73 @@
+{% extends "admin/base.html" %}
+{% block title %}Room Images{% endblock %}
+{% block page_title %}Room Images — {{ room.room_number }}{% endblock %}
+
+{% block content %}
+<div class="toolbar">
+    <div class="toolbar-left">
+        <h1 class="page-title">Images for Room {{ room.room_number }}</h1>
+        <p class="page-subtitle">Upload, set the primary image, or remove photos for this room.</p>
+    </div>
+    <div class="toolbar-actions">
+        <a href="{{ url_for('admin.rooms') }}" class="btn btn-ghost">← Back to Rooms</a>
+    </div>
+</div>
+
+<div class="detail-grid">
+    <div class="panel">
+        <div class="panel-head"><h2 class="panel-title">Upload Image</h2></div>
+        <div class="panel-body">
+            <form method="post" action="{{ url_for('admin.room_images', room_id=room.id) }}" enctype="multipart/form-data" class="stack-form" novalidate>
+                {{ form.hidden_tag() }}
+                <div class="form-group">
+                    {{ form.image.label(class="form-label") }}
+                    {{ form.image(class="form-control") }}
+                    {% for e in form.image.errors %}<span class="form-error">{{ e }}</span>{% endfor %}
+                </div>
+                <div class="form-group">
+                    {{ form.caption.label(class="form-label") }}
+                    {{ form.caption(class="form-control") }}
+                </div>
+                <div class="form-group form-group-check">
+                    {{ form.is_primary(class="form-check-input") }}
+                    {{ form.is_primary.label(class="form-check-label") }}
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">{{ form.submit.label.text }}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-head"><h2 class="panel-title">Gallery</h2></div>
+        <div class="panel-body">
+            {% if images %}
+            <div class="image-grid">
+                {% for img in images %}
+                <div class="image-card {% if img.is_primary %}is-primary{% endif %}">
+                    <img src="{{ img.image }}" alt="{{ img.caption or 'Room image' }}">
+                    {% if img.is_primary %}<span class="badge badge-gold">Primary</span>{% endif %}
+                    <div class="image-card-body">
+                        <p class="image-caption">{{ img.caption or 'No caption' }}</p>
+                        <div class="image-actions">
+                            <form method="post" action="{{ url_for('admin.room_image_primary', room_id=room.id, image_id=img.id) }}" class="inline-form">
+                                <button type="submit" class="btn btn-sm btn-ghost">Set Primary</button>
+                            </form>
+                            <form method="post" action="{{ url_for('admin.room_image_delete', room_id=room.id, image_id=img.id) }}" class="inline-form" onsubmit="return confirm('Delete this image?');">
+                                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <p>No images uploaded yet. Use the form to add the first photo.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

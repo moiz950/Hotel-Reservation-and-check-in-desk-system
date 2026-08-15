@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Create Account — {{ settings.get('hotel_name', 'Grand Meridian Hotel') }}{% endblock %}
+
+{% block content %}
+<section class="section auth-section">
+    <div class="container auth-card">
+        <div class="auth-head">
+            {% if settings.get('logo') %}
+            <img src="{{ settings.get('logo') }}" alt="{{ settings.get('hotel_name', 'Hotel') }}" class="auth-logo">
+            {% else %}
+            <span class="brand-mark auth-mark">GM</span>
+            {% endif %}
+            <h1>Create Your Account</h1>
+            <p>Book faster and manage your reservations online.</p>
+        </div>
+
+        <form method="post" action="{{ url_for('auth.register') }}" class="stack-form">
+            {{ form.hidden_tag() }}
+            <div class="form-group">
+                {{ form.full_name.label }}
+                {{ form.full_name(class="form-control", placeholder="Your full name", autofocus=true) }}
+                {% for error in form.full_name.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+            </div>
+            <div class="form-group">
+                {{ form.email.label }}
+                {{ form.email(class="form-control", placeholder="you@example.com") }}
+                {% for error in form.email.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+            </div>
+            <div class="form-group">
+                {{ form.username.label }}
+                {{ form.username(class="form-control", placeholder="Choose a username") }}
+                {% for error in form.username.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    {{ form.password.label }}
+                    {{ form.password(class="form-control", placeholder="Min. 6 characters") }}
+                    {% for error in form.password.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+                </div>
+                <div class="form-group">
+                    {{ form.confirm.label }}
+                    {{ form.confirm(class="form-control", placeholder="Repeat password") }}
+                    {% for error in form.confirm.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+                </div>
+            </div>
+            <button type="submit" class="btn btn-gold btn-lg btn-block">{{ form.submit.label.text }}</button>
+        </form>
+
+        <p class="auth-alt">Already have an account? <a href="{{ url_for('auth.login') }}">Sign in</a></p>
+    </div>
+</section>
+{% endblock %}

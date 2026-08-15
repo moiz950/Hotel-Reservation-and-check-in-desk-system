@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Services — {{ settings.get('hotel_name', 'Grand Meridian Hotel') }}{% endblock %}
+
+{% block content %}
+{% set _b = settings.get("banner_services") %}
+<section class="page-hero"{% if _b %} style="background-image: url('{{ _b }}');"{% else %} style="background-image: linear-gradient(135deg, #14213D 0%, #1F4E79 100%);"{% endif %}>
+    <div class="container page-hero-content">
+        <span class="section-eyebrow">Amenities</span>
+        <h1>Our Services</h1>
+        <p>Everything you need for a comfortable, memorable stay.</p>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="services-grid services-grid-lg">
+            {% for service in services %}
+            <div class="service-card">
+                <div class="service-icon">{{ service.icon or '✦' }}</div>
+                <h3>{{ service.name }}</h3>
+                <p>{{ service.description }}</p>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <h3>Services coming soon</h3>
+                <p>Our full range of services is being prepared.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<section class="section cta-section">
+    <div class="container cta-box">
+        <h2>Have a Special Request?</h2>
+        <p>Our team is happy to help you plan the perfect stay.</p>
+        <a href="{{ url_for('public.contact') }}" class="btn btn-gold btn-lg">Contact Us</a>
+    </div>
+</section>
+{% endblock %}

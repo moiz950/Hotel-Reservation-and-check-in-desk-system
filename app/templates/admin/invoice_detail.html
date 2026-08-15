@@ -1,0 +1,145 @@
+{% extends "admin/base.html" %}
+{% block title %}Invoice {{ invoice.invoice_number }}{% endblock %}
+{% block page_title %}Invoice Details{% endblock %}
+
+{% block content %}
+<div class="toolbar">
+    <div class="toolbar-actions">
+        <a href="{{ url_for('admin.invoices') }}" class="btn btn-ghost">&laquo; All Invoices</a>
+        <a href="{{ url_for('admin.reservation_detail', reservation_id=invoice.reservation.id) }}" class="btn btn-navy">View Reservation</a>
+        <a href="{{ url_for('admin.invoice_print', invoice_id=invoice.id) }}" class="btn btn-gold" target="_blank">Print Invoice</a>
+    </div>
+</div>
+
+<div class="detail-grid">
+    <div class="panel">
+        <div class="panel-head">
+            <h3 class="panel-title">Invoice Information</h3>
+            <span class="badge {{ invoice.status|badge }}">{{ invoice.status|title }}</span>
+        </div>
+        <div class="detail-body">
+            <h2 class="detail-name">{{ invoice.invoice_number }}</h2>
+            <p class="detail-code">Issued {{ invoice.issued_at.strftime('%b %d, %Y %H:%M') }}</p>
+            <div class="detail-list">
+                <div class="detail-item">
+                    <span class="detail-label">Reservation</span>
+                    <span class="detail-value">
+                        <a href="{{ url_for('admin.reservation_detail', reservation_id=invoice.reservation.id) }}" class="table-link">{{ invoice.reservation.reservation_code }}</a>
+                    </span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Guest</span>
+                    <span class="detail-value">{{ invoice.reservation.guest.full_name }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Room</span>
+                    <span class="detail-value">{{ invoice.reservation.room.room_number if invoice.reservation.room else '—' }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Stay</span>
+                    <span class="detail-value">{{ invoice.reservation.check_in_date.strftime('%b %d, %Y') }} → {{ invoice.reservation.check_out_date.strftime('%b %d, %Y') }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Issued By</span>
+                    <span class="detail-value">{{ invoice.staff.full_name if invoice.staff else '—' }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Total</span>
+                    <span class="detail-value">{{ invoice.total|money }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Paid</span>
+                    <span class="detail-value text-success">{{ invoice.paid|money }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Remaining</span>
+                    <span class="detail-value {{ 'text-danger' if invoice.remaining > 0 else 'text-success' }}">{{ invoice.remaining|money }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-head">
+            <h3 class="panel-title">Billing Breakdown</h3>
+        </div>
+        <div class="panel-body">
+            <div class="billing-summary">
+                <div class="billing-row">
+                    <span>Room Charge ({{ invoice.reservation.nights }} night{{ 's' if invoice.reservation.nights != 1 else '' }})</span>
+                    <span>{{ invoice.room_charge|money }}</span>
+                </div>
+                <div class="billing-row">
+                    <span>Additional Charges</span>
+                    <span>{{ invoice.additional_charges|money }}</span>
+                </div>
+                <div class="billing-row">
+                    <span>Discount</span>
+                    <span>-{{ invoice.discount|money }}</span>
+                </div>
+                <div class="billing-row">
+                    <span>Tax ({{ invoice.tax_rate }}%)</span>
+                    <span>{{ invoice.tax_amount|money }}</span>
+                </div>
+                <div class="billing-row billing-total">
+                    <span>Total</span>
+                    <span>{{ invoice.total|money }}</span>
+                </div>
+                <div class="billing-row">
+                    <span>Paid</span>
+                    <span class="text-success">{{ invoice.paid|money }}</span>
+                </div>
+                <div class="billing-row billing-remaining">
+                    <span>Balance Due</span>
+                    <span class="{{ 'text-danger' if invoice.remaining > 0 else 'text-success' }}">{{ invoice.remaining|money }}</span>
+                </div>
+            </div>
+            {% if invoice.remaining > 0 %}
+            <a href="{{ url_for('admin.payment_new', reservation_id=invoice.reservation.id) }}" class="btn btn-gold btn-block">Record Payment</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-head">
+        <h3 class="panel-title">Payments on this Reservation</h3>
+    </div>
+    <div class="table-wrap">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Payment Code</th>
+                    <th>Amount</th>
+                    <th>Method</th>
+                    <th>Reference</th>
+                    <th>Received</th>
+                    <th>Received By</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for payment in invoice.reservation.payments %}
+                <tr>
+                    <td><span class="code-badge">{{ payment.payment_code }}</span></td>
+                    <td><strong>{{ payment.amount|money }}</strong></td>
+                    <td><span class="badge badge-info">{{ payment.method }}</span></td>
+                    <td>{{ payment.reference or '—' }}</td>
+                    <td>{{ payment.received_at.strftime('%b %d, %Y %H:%M') }}</td>
+                    <td>{{ payment.staff.full_name if payment.staff else '—' }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6">
+                        <div class="empty-state">
+                            <div class="empty-icon">💳</div>
+                            <h4>No payments recorded</h4>
+                            <p>Payments received against this reservation will appear here.</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

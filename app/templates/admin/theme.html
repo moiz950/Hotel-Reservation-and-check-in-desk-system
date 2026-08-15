@@ -1,0 +1,75 @@
+{% extends "admin/base.html" %}
+{% block title %}Website Theme{% endblock %}
+{% block page_title %}Website Theme{% endblock %}
+
+{% block content %}
+<div class="toolbar">
+    <div class="toolbar-left">
+        <h1 class="page-title">Theme & Appearance</h1>
+        <p class="page-subtitle">Control the website colours and light/dark mode. Changes apply immediately.</p>
+    </div>
+</div>
+
+<div class="detail-grid">
+    <div class="panel">
+        <div class="panel-head"><h2 class="panel-title">Settings</h2></div>
+        <div class="panel-body">
+            <form method="post" action="{{ url_for('admin.theme') }}" class="stack-form" novalidate>
+                {{ form.hidden_tag() }}
+                <div class="form-row">
+                    <div class="form-group">
+                        {{ form.primary_color.label(class="form-label") }}
+                        {{ form.primary_color(class="form-control", type="color") }}
+                        {% for e in form.primary_color.errors %}<span class="form-error">{{ e }}</span>{% endfor %}
+                    </div>
+                    <div class="form-group">
+                        {{ form.secondary_color.label(class="form-label") }}
+                        {{ form.secondary_color(class="form-control", type="color") }}
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        {{ form.background_color.label(class="form-label") }}
+                        {{ form.background_color(class="form-control", type="color") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.text_color.label(class="form-label") }}
+                        {{ form.text_color(class="form-control", type="color") }}
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        {{ form.button_style.label(class="form-label") }}
+                        {{ form.button_style(class="form-control") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.mode.label(class="form-label") }}
+                        {{ form.mode(class="form-control") }}
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">{{ form.submit.label.text }}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-head"><h2 class="panel-title">Live Preview</h2></div>
+        <div class="panel-body">
+            <div class="theme-preview" style="
+                --pv: {{ current.theme_primary_color }};
+                --sv: {{ current.theme_secondary_color }};
+                --bv: {{ current.theme_background_color }};
+                --tv: {{ current.theme_text_color }};
+                background: var(--bv); color: var(--tv); padding: 20px; border-radius: 12px;">
+                <h3 style="color: var(--pv); margin-top:0;">Sample Heading</h3>
+                <p>This is how your selected colours look together on the website.</p>
+                <button style="background: var(--pv); color:#fff; border:none; padding:10px 18px; border-radius:{% if current.theme_button_style == 'pill' %}999px{% elif current.theme_button_style == 'square' %}0{% else %}8px{% endif %};">Primary Button</button>
+                <button style="background: var(--sv); color:#fff; border:none; padding:10px 18px; margin-left:8px; border-radius:{% if current.theme_button_style == 'pill' %}999px{% elif current.theme_button_style == 'square' %}0{% else %}8px{% endif %};">Accent</button>
+            </div>
+            <p class="page-subtitle" style="margin-top:12px;">Mode: <strong>{{ current.theme_mode|title }}</strong></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

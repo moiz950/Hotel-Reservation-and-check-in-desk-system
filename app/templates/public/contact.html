@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Contact Us — {{ settings.get('hotel_name', 'Grand Meridian Hotel') }}{% endblock %}
+
+{% block content %}
+{% set _b = settings.get("banner_contact") %}
+<section class="page-hero"{% if _b %} style="background-image: url('{{ _b }}');"{% else %} style="background-image: linear-gradient(135deg, #14213D 0%, #1F4E79 100%);"{% endif %}>
+    <div class="container page-hero-content">
+        <span class="section-eyebrow">Get in Touch</span>
+        <h1>Contact Us</h1>
+        <p>We would love to hear from you.</p>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container contact-layout">
+        <div class="contact-info">
+            <h2>Contact Information</h2>
+            <ul class="contact-list">
+                <li>
+                    <span class="contact-icon">📍</span>
+                    <div><strong>Address</strong><p>{{ settings.get('address', '') }}</p></div>
+                </li>
+                <li>
+                    <span class="contact-icon">📞</span>
+                    <div><strong>Phone</strong><p><a href="tel:{{ settings.get('phone', '') }}">{{ settings.get('phone', '') }}</a></p></div>
+                </li>
+                <li>
+                    <span class="contact-icon">✉️</span>
+                    <div><strong>Email</strong><p><a href="mailto:{{ settings.get('email', '') }}">{{ settings.get('email', '') }}</a></p></div>
+                </li>
+                <li>
+                    <span class="contact-icon">🕐</span>
+                    <div><strong>Front Desk</strong><p>{{ settings.get('front_desk_hours', 'Open 24 Hours') }}</p></div>
+                </li>
+                <li>
+                    <span class="contact-icon">🛎</span>
+                    <div><strong>Check-In / Check-Out</strong><p>{{ settings.get('check_in_time', '14:00') }} / {{ settings.get('check_out_time', '12:00') }}</p></div>
+                </li>
+            </ul>
+        </div>
+
+        <div class="contact-form-panel">
+            <h2>Send Us a Message</h2>
+            <form method="post" action="{{ url_for('public.contact') }}" class="stack-form">
+                {{ form.hidden_tag() }}
+                <div class="form-group">
+                    {{ form.name.label }}
+                    {{ form.name(class="form-control", placeholder="Your full name") }}
+                    {% for error in form.name.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        {{ form.email.label }}
+                        {{ form.email(class="form-control", placeholder="you@example.com") }}
+                        {% for error in form.email.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+                    </div>
+                    <div class="form-group">
+                        {{ form.phone.label }}
+                        {{ form.phone(class="form-control", placeholder="Optional") }}
+                        {% for error in form.phone.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+                    </div>
+                </div>
+                <div class="form-group">
+                    {{ form.subject.label }}
+                    {{ form.subject(class="form-control", placeholder="Subject (optional)") }}
+                    {% for error in form.subject.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+                </div>
+                <div class="form-group">
+                    {{ form.message.label }}
+                    {{ form.message(class="form-control", rows="5", placeholder="How can we help?") }}
+                    {% for error in form.message.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+                </div>
+                <button type="submit" class="btn btn-gold btn-lg btn-block">{{ form.submit.label.text }}</button>
+            </form>
+        </div>
+    </div>
+</section>
+
+{% if settings.get('map_embed') %}
+<section class="section map-section">
+    <div class="container">
+        {{ settings.get('map_embed')|safe }}
+    </div>
+</section>
+{% endif %}
+{% endblock %}

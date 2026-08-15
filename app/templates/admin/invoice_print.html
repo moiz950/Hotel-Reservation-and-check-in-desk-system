@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice {{ invoice.invoice_number }} — {{ settings.get('hotel_name', 'Grand Meridian Hotel') }}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            color: #202124;
+            background: #fff;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        .invoice {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 48px;
+        }
+        .invoice-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding-bottom: 24px;
+            border-bottom: 3px solid #14213D;
+            margin-bottom: 28px;
+        }
+        .brand h1 {
+            font-family: Georgia, 'Times New Roman', serif;
+            font-size: 26px;
+            color: #14213D;
+            letter-spacing: 1px;
+        }
+        .brand p { color: #6B7280; font-size: 12px; }
+        .invoice-meta { text-align: right; }
+        .invoice-meta .inv-no {
+            font-size: 20px;
+            font-weight: 700;
+            color: #14213D;
+        }
+        .invoice-meta .status {
+            display: inline-block;
+            margin-top: 6px;
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background: #F4F5F7;
+            color: #6B7280;
+        }
+        .status.paid { background: #e8f5e9; color: #2e7d32; }
+        .status.partial { background: #fff8e1; color: #b8860b; }
+        .status.unpaid { background: #fdecea; color: #c62828; }
+        .invoice-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 28px;
+        }
+        .info-block h3 {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #6B7280;
+            margin-bottom: 8px;
+        }
+        .info-block h2 { font-size: 17px; color: #14213D; margin-bottom: 4px; }
+        .info-block p { color: #202124; font-size: 13px; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 24px;
+        }
+        thead th {
+            background: #14213D;
+            color: #fff;
+            text-align: left;
+            padding: 10px 12px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        tbody td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #E5E7EB;
+        }
+        tbody tr:nth-child(even) { background: #FAF8F3; }
+        .num { text-align: right; }
+        .totals { width: 320px; margin-left: auto; }
+        .totals .row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 12px;
+            color: #202124;
+        }
+        .totals .row.grand {
+            background: #14213D;
+            color: #fff;
+            font-weight: 700;
+            font-size: 16px;
+            margin-top: 6px;
+            padding: 10px 12px;
+        }
+        .totals .row.due { background: #FAF8F3; font-weight: 600; }
+        .foot {
+            border-top: 1px solid #E5E7EB;
+            margin-top: 24px;
+            padding-top: 16px;
+            text-align: center;
+            color: #6B7280;
+            font-size: 12px;
+        }
+        .no-print { text-align: center; margin: 24px 0; }
+        .btn {
+            display: inline-block;
+            padding: 10px 24px;
+            background: #14213D;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+        @media print {
+            .no-print { display: none; }
+            body { background: #fff; }
+            .invoice { padding: 0; max-width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="no-print">
+        <a href="javascript:window.print()" class="btn">Print Invoice</a>
+        <a href="{{ url_for('admin.invoice_detail', invoice_id=invoice.id) }}" class="btn" style="background:#6B7280; margin-left:8px;">Back</a>
+    </div>
+
+    <div class="invoice">
+        <div class="invoice-head">
+            <div class="brand">
+                <h1>{{ settings.get('hotel_name', 'Grand Meridian Hotel') }}</h1>
+                <p>{{ settings.get('hotel_address', '') }}</p>
+                <p>{{ settings.get('hotel_phone', '') }} {{ (' | ' ~ settings.get('hotel_email', '')) if settings.get('hotel_email') }}</p>
+            </div>
+            <div class="invoice-meta">
+                <div class="inv-no">{{ invoice.invoice_number }}</div>
+                <div>Issued: {{ invoice.issued_at.strftime('%B %d, %Y') }}</div>
+                <span class="status {{ invoice.status }}">{{ invoice.status }}</span>
+            </div>
+        </div>
+
+        <div class="invoice-grid">
+            <div class="info-block">
+                <h3>Billed To</h3>
+                <h2>{{ invoice.reservation.guest.full_name }}</h2>
+                <p>{{ invoice.reservation.guest.address or '' }}</p>
+                <p>{{ invoice.reservation.guest.city or '' }}{{ ', ' if invoice.reservation.guest.city and invoice.reservation.guest.country else '' }}{{ invoice.reservation.guest.country or '' }}</p>
+                <p>{{ invoice.reservation.guest.email or '' }}</p>
+                <p>{{ invoice.reservation.guest.phone or '' }}</p>
+            </div>
+            <div class="info-block">
+                <h3>Stay Details</h3>
+                <p><strong>Reservation:</strong> {{ invoice.reservation.reservation_code }}</p>
+                <p><strong>Room:</strong> {{ invoice.reservation.room.room_number if invoice.reservation.room else '—' }} ({{ invoice.reservation.room.room_type.name if invoice.reservation.room and invoice.reservation.room.room_type else '' }})</p>
+                <p><strong>Check-In:</strong> {{ invoice.reservation.check_in_date.strftime('%B %d, %Y') }}</p>
+                <p><strong>Check-Out:</strong> {{ invoice.reservation.check_out_date.strftime('%B %d, %Y') }}</p>
+                <p><strong>Nights:</strong> {{ invoice.reservation.nights }}</p>
+                <p><strong>Guests:</strong> {{ invoice.reservation.adults }} adult{{ 's' if invoice.reservation.adults != 1 else '' }}{{ ' + ' ~ invoice.reservation.children ~ ' child' if invoice.reservation.children else '' }}</p>
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Description</th>
+                    <th class="num">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Room Charges — {{ invoice.reservation.nights }} night{{ 's' if invoice.reservation.nights != 1 else '' }} @ {{ invoice.reservation.room_rate|money }} / night</td>
+                    <td class="num">{{ invoice.room_charge|money }}</td>
+                </tr>
+                {% if invoice.additional_charges %}
+                <tr>
+                    <td>Additional Charges</td>
+                    <td class="num">{{ invoice.additional_charges|money }}</td>
+                </tr>
+                {% endif %}
+                {% if invoice.discount %}
+                <tr>
+                    <td>Discount</td>
+                    <td class="num">-{{ invoice.discount|money }}</td>
+                </tr>
+                {% endif %}
+                <tr>
+                    <td>Tax ({{ invoice.tax_rate }}%)</td>
+                    <td class="num">{{ invoice.tax_amount|money }}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="totals">
+            <div class="row"><span>Subtotal</span><span>{{ invoice.total|money }}</span></div>
+            <div class="row"><span>Amount Paid</span><span>{{ invoice.paid|money }}</span></div>
+            <div class="row due"><span>Balance Due</span><span>{{ invoice.remaining|money }}</span></div>
+            <div class="row grand"><span>Total</span><span>{{ invoice.total|money }}</span></div>
+        </div>
+
+        <div class="foot">
+            <p>{{ settings.get('hotel_name', 'Grand Meridian Hotel') }} — {{ settings.get('hotel_tagline', '') }}</p>
+            <p>Thank you for staying with us. We hope to welcome you again soon.</p>
+        </div>
+    </div>
+</body>
+</html>

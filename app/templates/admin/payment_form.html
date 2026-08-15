@@ -1,0 +1,96 @@
+{% extends "admin/base.html" %}
+{% block title %}Record Payment{% endblock %}
+{% block page_title %}Record Payment{% endblock %}
+
+{% block content %}
+<div class="toolbar">
+    <div class="toolbar-actions">
+        <a href="{{ url_for('admin.reservation_detail', reservation_id=reservation.id) }}" class="btn btn-ghost">&laquo; Back to Reservation</a>
+    </div>
+</div>
+
+<div class="detail-grid">
+    <div class="panel">
+        <div class="panel-head">
+            <h3 class="panel-title">Reservation Summary</h3>
+            <span class="badge {{ reservation.status|badge }}">{{ reservation.status|title }}</span>
+        </div>
+        <div class="detail-body">
+            <h2 class="detail-name">{{ reservation.reservation_code }}</h2>
+            <p class="detail-code">{{ reservation.guest.full_name }}</p>
+            <div class="detail-list">
+                <div class="detail-item">
+                    <span class="detail-label">Guest</span>
+                    <span class="detail-value">{{ reservation.guest.full_name }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Room</span>
+                    <span class="detail-value">{{ reservation.room.room_number if reservation.room else 'Unassigned' }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Stay</span>
+                    <span class="detail-value">{{ reservation.check_in_date.strftime('%b %d, %Y') }} → {{ reservation.check_out_date.strftime('%b %d, %Y') }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Total</span>
+                    <span class="detail-value">{{ reservation.total_amount|money }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Paid</span>
+                    <span class="detail-value text-success">{{ reservation.paid_amount|money }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Remaining</span>
+                    <span class="detail-value {{ 'text-danger' if reservation.remaining_amount > 0 else 'text-success' }}">{{ reservation.remaining_amount|money }}</span>
+                </div>
+            </div>
+            {% if reservation.remaining_amount <= 0 %}
+            <div class="alert alert-success">
+                This reservation is fully paid. No balance is due.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-head">
+            <h3 class="panel-title">Payment Details</h3>
+        </div>
+        <div class="panel-body">
+            <form method="post" action="" class="stack-form" novalidate>
+                {{ form.hidden_tag() }}
+                <div class="form-row">
+                    <div class="form-group">
+                        {{ form.amount.label }}
+                        {{ form.amount(class="form-control", step="0.01", placeholder="0.00") }}
+                        {% for error in form.amount.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+                    </div>
+                    <div class="form-group">
+                        {{ form.method.label }}
+                        {{ form.method(class="form-control") }}
+                        {% for error in form.method.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        {{ form.reference.label }}
+                        {{ form.reference(class="form-control", placeholder="Transaction / cheque reference") }}
+                        {% for error in form.reference.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        {{ form.note.label }}
+                        {{ form.note(class="form-control", placeholder="Optional note") }}
+                        {% for error in form.note.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-gold">{{ form.submit.label.text }}</button>
+                    <a href="{{ url_for('admin.reservation_detail', reservation_id=reservation.id) }}" class="btn btn-ghost">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,93 @@
+{% extends "admin/base.html" %}
+{% block title %}Staff Management{% endblock %}
+{% block page_title %}Staff Management{% endblock %}
+
+{% block content %}
+<div class="toolbar">
+    <div class="toolbar-actions">
+        <a href="{{ url_for('admin.staff_new') }}" class="btn btn-gold">+ Add Staff</a>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-head">
+        <h3 class="panel-title">Staff Accounts</h3>
+        <span class="panel-count">{{ staff_members|length }} staff</span>
+    </div>
+    <div class="table-wrap">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Staff Member</th>
+                    <th>Username</th>
+                    <th>Job Title</th>
+                    <th>Phone</th>
+                    <th>Permissions</th>
+                    <th>Last Login</th>
+                    <th>Status</th>
+                    <th class="th-actions">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for staff in staff_members %}
+                <tr>
+                    <td>
+                        <div class="table-user">
+                            <span class="user-avatar">{{ staff.user.full_name[:1]|upper }}</span>
+                            <div>
+                                <a href="#" class="table-link">{{ staff.user.full_name }}</a>
+                                <div class="table-sub">{{ staff.user.email }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>{{ staff.user.username }}</td>
+                    <td>{{ staff.job_title or '—' }}</td>
+                    <td>{{ staff.phone or '—' }}</td>
+                    <td>
+                        <span class="badge badge-info">{{ staff.permission_list|length }} permissions</span>
+                    </td>
+                    <td>{{ staff.user.last_login.strftime('%b %d, %Y %H:%M') if staff.user.last_login else 'Never' }}</td>
+                    <td>
+                        {% if staff.user.is_admin %}
+                        <span class="badge badge-gold">Administrator</span>
+                        {% elif staff.is_active %}
+                        <span class="badge badge-success">Active</span>
+                        {% else %}
+                        <span class="badge badge-danger">Inactive</span>
+                        {% endif %}
+                    </td>
+                    <td class="td-actions">
+                        {% if not staff.user.is_admin %}
+                        <a href="{{ url_for('admin.staff_edit', staff_id=staff.id) }}" class="btn btn-sm btn-navy">Edit</a>
+                        <form method="post" action="{{ url_for('admin.staff_toggle', staff_id=staff.id) }}" class="inline-form">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm {{ 'btn-warning' if staff.is_active else 'btn-success' }}">
+                                {{ 'Deactivate' if staff.is_active else 'Activate' }}
+                            </button>
+                        </form>
+                        <form method="post" action="{{ url_for('admin.staff_delete', staff_id=staff.id) }}" class="inline-form" onsubmit="return confirm('Delete this staff account? This cannot be undone.');">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                        </form>
+                        {% else %}
+                        <span class="muted">Protected</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="8">
+                        <div class="empty-state">
+                            <div class="empty-icon">👥</div>
+                            <h4>No staff members yet</h4>
+                            <p>Add front desk staff with role-based permissions.</p>
+                            <a href="{{ url_for('admin.staff_new') }}" class="btn btn-gold">+ Add Staff</a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

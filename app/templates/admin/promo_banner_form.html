@@ -1,0 +1,76 @@
+{% extends "admin/base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="panel panel-narrow">
+    <div class="panel-head">
+        <h3 class="panel-title">{{ title }}</h3>
+    </div>
+    <form method="post" action="" enctype="multipart/form-data" class="stack-form" novalidate>
+        {{ form.hidden_tag() }}
+        <div class="form-row">
+            <div class="form-group">
+                {{ form.title.label }}
+                {{ form.title(class="form-control", placeholder="e.g. Summer Escape Package") }}
+                {% for error in form.title.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                {{ form.description.label }}
+                {{ form.description(class="form-control", rows="3", placeholder="Offer details") }}
+                {% for error in form.description.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                {{ form.image.label }}
+                {{ form.image(class="form-control") }}
+                {% if banner and banner.image %}
+                <div class="form-preview">
+                    <img src="{{ url_for('static', filename='uploads/' + banner.image) }}" alt="Current banner image">
+                    <small class="muted">Current image. Upload a new one to replace it.</small>
+                </div>
+                {% endif %}
+                {% for error in form.image.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                {{ form.badge_text.label }}
+                {{ form.badge_text(class="form-control", placeholder="e.g. -20% OFF") }}
+                {% for error in form.badge_text.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+            </div>
+            <div class="form-group">
+                {{ form.display_order.label }}
+                {{ form.display_order(class="form-control", placeholder="0") }}
+                {% for error in form.display_order.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                {{ form.cta_text.label }}
+                {{ form.cta_text(class="form-control", placeholder="e.g. Book Now") }}
+                {% for error in form.cta_text.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+            </div>
+            <div class="form-group">
+                {{ form.cta_url.label }}
+                {{ form.cta_url(class="form-control", placeholder="/reservation or https://...") }}
+                {% for error in form.cta_url.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group form-group-check">
+                {{ form.is_active(class="form-check-input") }}
+                {{ form.is_active.label(class="form-check-label") }}
+                {% for error in form.is_active.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+            </div>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-gold">{{ form.submit.label.text }}</button>
+            <a href="{{ url_for('admin.promo_banners') }}" class="btn btn-ghost">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

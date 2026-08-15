@@ -1,0 +1,39 @@
+{% extends "admin/base.html" %}
+{% block title %}New Housekeeping Task{% endblock %}
+{% block page_title %}New Housekeeping Task{% endblock %}
+
+{% block content %}
+<div class="panel panel-narrow">
+    <div class="panel-head">
+        <h3 class="panel-title">Create Cleaning Task</h3>
+    </div>
+    <form method="post" action="" class="stack-form" novalidate>
+        {{ form.hidden_tag() }}
+        <div class="form-row">
+            <div class="form-group">
+                {{ form.room_id.label }}
+                {{ form.room_id(class="form-control") }}
+                {% for error in form.room_id.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                {{ form.assigned_to.label }}
+                {{ form.assigned_to(class="form-control", placeholder="Housekeeper name") }}
+                {% for error in form.assigned_to.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                {{ form.notes.label }}
+                {{ form.notes(class="form-control", rows="4", placeholder="Cleaning instructions, priority, etc.") }}
+                {% for error in form.notes.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+            </div>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-gold">{{ form.submit.label.text }}</button>
+            <a href="{{ url_for('admin.housekeeping') }}" class="btn btn-ghost">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

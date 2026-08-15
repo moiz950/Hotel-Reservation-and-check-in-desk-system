@@ -1,0 +1,122 @@
+{% extends "admin/base.html" %}
+{% block title %}Check-In {{ reservation.reservation_code }}{% endblock %}
+{% block page_title %}Check-In Desk{% endblock %}
+
+{% block content %}
+<div class="toolbar">
+    <div class="toolbar-actions">
+        <a href="{{ url_for('admin.check_in') }}" class="btn btn-ghost">&laquo; Back to Search</a>
+        <a href="{{ url_for('admin.reservation_detail', reservation_id=reservation.id) }}" class="btn btn-navy">View Reservation</a>
+    </div>
+</div>
+
+<div class="detail-grid">
+    <div class="panel">
+        <div class="panel-head">
+            <h3 class="panel-title">Reservation Details</h3>
+            <span class="badge {{ reservation.status|badge }}">{{ reservation.status|title }}</span>
+        </div>
+        <div class="detail-body">
+            <h2 class="detail-name">{{ reservation.reservation_code }}</h2>
+            <p class="detail-code">{{ reservation.guest.full_name }}</p>
+            <div class="detail-list">
+                <div class="detail-item">
+                    <span class="detail-label">Guest</span>
+                    <span class="detail-value">{{ reservation.guest.full_name }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Phone</span>
+                    <span class="detail-value">{{ reservation.guest.phone or '—' }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Room</span>
+                    <span class="detail-value">
+                        {{ reservation.room.room_number if reservation.room else 'Unassigned' }}
+                        <span class="table-sub">({{ reservation.room.room_type.name if reservation.room and reservation.room.room_type else '' }})</span>
+                    </span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Check-In</span>
+                    <span class="detail-value">{{ reservation.check_in_date.strftime('%A, %b %d, %Y') }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Check-Out</span>
+                    <span class="detail-value">{{ reservation.check_out_date.strftime('%A, %b %d, %Y') }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Nights</span>
+                    <span class="detail-value">{{ reservation.nights }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Guests</span>
+                    <span class="detail-value">{{ reservation.adults }} adult{{ 's' if reservation.adults != 1 else '' }}{{ ' + ' ~ reservation.children ~ ' child' if reservation.children else '' }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Source</span>
+                    <span class="detail-value">{{ reservation.source|title }}</span>
+                </div>
+            </div>
+            {% if reservation.special_request %}
+            <div class="detail-notes">
+                <h4>Special Request</h4>
+                <p>{{ reservation.special_request }}</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-head">
+            <h3 class="panel-title">Complete Check-In</h3>
+        </div>
+        <div class="panel-body">
+            <div class="billing-summary">
+                <div class="billing-row">
+                    <span>Room Charge ({{ reservation.nights }} night{{ 's' if reservation.nights != 1 else '' }})</span>
+                    <span>{{ reservation.room_charge|money }}</span>
+                </div>
+                <div class="billing-row">
+                    <span>Additional Charges</span>
+                    <span>{{ reservation.additional_charges|money }}</span>
+                </div>
+                <div class="billing-row">
+                    <span>Discount</span>
+                    <span>-{{ reservation.discount|money }}</span>
+                </div>
+                <div class="billing-row">
+                    <span>Tax ({{ reservation.tax_rate }}%)</span>
+                    <span>{{ reservation.tax_amount|money }}</span>
+                </div>
+                <div class="billing-row billing-total">
+                    <span>Total</span>
+                    <span>{{ reservation.total_amount|money }}</span>
+                </div>
+            </div>
+
+            <div class="alert alert-info">
+                <strong>Room status:</strong>
+                {% if reservation.room %}
+                <span class="badge {{ reservation.room.status|badge }}">{{ reservation.room.status|title }}</span>
+                {% else %}
+                <span class="badge badge-muted">No room assigned</span>
+                {% endif %}
+                <p class="muted">Check-in will mark this room as <strong>Occupied</strong> and the reservation as <strong>Checked In</strong>.</p>
+            </div>
+
+            <form method="post" action="" class="stack-form" novalidate>
+                {{ form.hidden_tag() }}
+                <div class="form-row">
+                    <div class="form-group">
+                        {{ form.notes.label }}
+                        {{ form.notes(class="form-control", rows="4", placeholder="Check-in notes (optional)") }}
+                        {% for error in form.notes.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-gold btn-lg">{{ form.submit.label.text }}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

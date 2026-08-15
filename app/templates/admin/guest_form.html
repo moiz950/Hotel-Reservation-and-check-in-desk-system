@@ -1,0 +1,75 @@
+{% extends "admin/base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="panel panel-narrow">
+    <div class="panel-head">
+        <h3 class="panel-title">{{ title }}</h3>
+    </div>
+    <form method="post" action="" class="stack-form" novalidate>
+        {{ form.hidden_tag() }}
+        <div class="form-row">
+            <div class="form-group">
+                {{ form.full_name.label }}
+                {{ form.full_name(class="form-control", placeholder="Guest full name") }}
+                {% for error in form.full_name.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                {{ form.email.label }}
+                {{ form.email(class="form-control", placeholder="guest@example.com") }}
+                {% for error in form.email.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+            </div>
+            <div class="form-group">
+                {{ form.phone.label }}
+                {{ form.phone(class="form-control", placeholder="+1 555 000 0000") }}
+                {% for error in form.phone.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                {{ form.address.label }}
+                {{ form.address(class="form-control", placeholder="Street address") }}
+                {% for error in form.address.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                {{ form.city.label }}
+                {{ form.city(class="form-control", placeholder="City") }}
+                {% for error in form.city.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+            </div>
+            <div class="form-group">
+                {{ form.country.label }}
+                {{ form.country(class="form-control", placeholder="Country") }}
+                {% for error in form.country.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                {{ form.id_type.label }}
+                {{ form.id_type(class="form-control") }}
+                {% for error in form.id_type.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+            </div>
+            <div class="form-group">
+                {{ form.id_number.label }}
+                {{ form.id_number(class="form-control", placeholder="ID / Passport number") }}
+                {% for error in form.id_number.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                {{ form.notes.label }}
+                {{ form.notes(class="form-control", rows="4", placeholder="Preferences, special needs, remarks...") }}
+                {% for error in form.notes.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+            </div>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-gold">{{ form.submit.label.text }}</button>
+            <a href="{{ url_for('admin.guests') }}" class="btn btn-ghost">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

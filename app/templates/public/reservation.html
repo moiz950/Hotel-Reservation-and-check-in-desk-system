@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+{% block title %}Reserve a Room — {{ settings.get('hotel_name', 'Grand Meridian Hotel') }}{% endblock %}
+
+{% block content %}
+<!-- ===== Page hero ===== -->
+<section class="page-hero" style="background-image: linear-gradient(135deg, #14213D 0%, #1F4E79 100%);">
+    <div class="container page-hero-content">
+        <span class="section-eyebrow">Booking</span>
+        <h1>Reserve Your Stay</h1>
+        <p>Find the perfect room for your dates and complete your booking in minutes.</p>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container reservation-layout">
+        <!-- ===== Search form ===== -->
+        <div class="reservation-search-panel">
+            <h2>Search Availability</h2>
+            <form action="{{ url_for('public.reservation') }}" method="get" class="stack-form">
+                <div class="form-group">
+                    <label for="check_in">Check-In</label>
+                    <input type="date" id="check_in" name="check_in" value="{{ check_in }}" min="{{ today().isoformat() }}" required>
+                </div>
+                <div class="form-group">
+                    <label for="check_out">Check-Out</label>
+                    <input type="date" id="check_out" name="check_out" value="{{ check_out }}" min="{{ today().isoformat() }}" required>
+                </div>
+                <div class="form-group">
+                    <label for="guests">Guests</label>
+                    <select id="guests" name="guests">
+                        {% for n in range(1, 7) %}
+                        <option value="{{ n }}" {% if guests == n %}selected{% endif %}>{{ n }} {% if n == 1 %}Guest{% else %}Guests{% endif %}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="room_type">Room Type</label>
+                    <select id="room_type" name="room_type">
+                        <option value="">Any Type</option>
+                        {% for rt in room_types %}
+                        <option value="{{ rt.id }}" {% if room_type_id == rt.id %}selected{% endif %}>{{ rt.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-gold btn-block">Search Available Rooms</button>
+            </form>
+        </div>
+
+        <!-- ===== Results ===== -->
+        <div class="reservation-results">
+            {% if error %}
+            <div class="alert alert-error">{{ error }}</div>
+            {% endif %}
+
+            {% if summary %}
+            <!-- ===== Selected room summary ===== -->
+            <div class="booking-summary">
+                <h2>Your Booking Summary</h2>
+                <div class="summary-room">
+                    <div class="summary-room-media">
+                        {% if summary.room.room_type and summary.room.room_type.image %}
+                        <img src="{{ summary.room.room_type.image }}" alt="{{ summary.room.room_number }}">
+                        {% else %}
+                        <div class="room-card-placeholder">Room {{ summary.room.room_number }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="summary-room-info">
+                        <h3>Room {{ summary.room.room_number }} — {{ summary.room.room_type.name if summary.room.room_type else '' }}</h3>
+                        <p>{{ summary.room.bed_type or '' }} &middot; Sleeps {{ summary.room.capacity }}</p>
+                        <p class="summary-dates">
+                            <strong>{{ summary.check_in.strftime('%a, %d %b %Y') }}</strong> &rarr;
+                            <strong>{{ summary.check_out.strftime('%a, %d %b %Y') }}</strong>
+                            ({{ summary.nights }} night{{ 's' if summary.nights != 1 else '' }})
+                        </p>
+                    </div>
+                </div>
+
+                <table class="summary-table">
+                    <tr><td>Room rate ({{ settings.get('currency', '$') }}{{ '%.0f'|format(summary.room.price) }} × {{ summary.nights }})</td><td>{{ summary.room_charge|money }}</td></tr>
+                    <tr><td>Tax ({{ '%.0f'|format(summary.tax_rate) }}%)</td><td>{{ summary.tax_amount|money }}</td></tr>
+                    <tr class="summary-total"><td>Total</td><td>{{ summary.total|money }}</td></tr>
+                </table>
+
+                <form action="{{ url_for('public.reservation_confirm') }}" method="post" class="stack-form booking-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="check_in" value="{{ summary.check_in.isoformat() }}">
+                    <input type="hidden" name="check_out" value="{{ summary.check_out.isoformat() }}">
+                    <input type="hidden" name="room_id" value="{{ summary.room.id }}">
+                    <input type="hidden" name="guests" value="{{ summary.guests }}">
+                    <input type="hidden" name="room_type_id" value="{{ summary.room_type_id }}">
+
+                    <h3>Guest Details</h3>
+                    <div class="form-group">
+                        <label for="full_name">Full Name *</label>
+                        <input type="text" id="full_name" name="full_name" value="{{ current_user.full_name if current_user.is_authenticated else '' }}" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="email">Email *</label>
+                            <input type="email" id="email" name="email" value="{{ current_user.email if current_user.is_authenticated else '' }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="phone">Phone</label>
+                            <input type="tel" id="phone" name="phone">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="special_request">Special Request</label>
+                        <textarea id="special_request" name="special_request" rows="3" placeholder="Any special requests? (optional)"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-gold btn-lg btn-block">Confirm Booking</button>
+                    <p class="form-note">No payment is required now. Our front desk will confirm your reservation.</p>
+                </form>
+            </div>
+
+            {% elif available %}
+            <!-- ===== Available rooms list ===== -->
+            <h2>Available Rooms</h2>
+            <p class="results-count">{{ available|length }} room{{ 's' if available|length != 1 else '' }} available for your dates.</p>
+            <div class="available-list">
+                {% for room in available %}
+                <form action="{{ url_for('public.reservation') }}" method="post" class="available-room">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="check_in" value="{{ check_in }}">
+                    <input type="hidden" name="check_out" value="{{ check_out }}">
+                    <input type="hidden" name="guests" value="{{ guests }}">
+                    <input type="hidden" name="room_type" value="{{ room_type_id or '' }}">
+                    <input type="hidden" name="room_id" value="{{ room.id }}">
+                    <div class="available-room-media">
+                        {% if room.room_type and room.room_type.image %}
+                        <img src="{{ room.room_type.image }}" alt="Room {{ room.room_number }}">
+                        {% else %}
+                        <div class="room-card-placeholder">Room {{ room.room_number }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="available-room-info">
+                        <h3>Room {{ room.room_number }}</h3>
+                        <p>{{ room.room_type.name if room.room_type else '' }} &middot; {{ room.bed_type or '' }} &middot; Sleeps {{ room.capacity }}</p>
+                        {% if room.facility_list %}<p class="room-facilities">{{ room.facility_list|join(' · ') }}</p>{% endif %}
+                    </div>
+                    <div class="available-room-price">
+                        <strong>{{ room.price|money }}</strong><small>per night</small>
+                        <button type="submit" class="btn btn-gold btn-sm">Select</button>
+                    </div>
+                </form>
+                {% endfor %}
+            </div>
+            {% elif check_in and check_out %}
+            <div class="empty-state">
+                <h3>No rooms available</h3>
+                <p>We couldn't find any rooms for the selected dates. Try different dates or a different room type.</p>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <h3>Find your perfect room</h3>
+                <p>Enter your check-in and check-out dates to see live availability and pricing.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}

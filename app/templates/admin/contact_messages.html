@@ -1,0 +1,76 @@
+{% extends "admin/base.html" %}
+{% block title %}Contact Messages{% endblock %}
+{% block page_title %}Contact Messages{% endblock %}
+
+{% block content %}
+<div class="toolbar">
+    <div class="toolbar-actions">
+        <a href="{{ url_for('admin.content') }}" class="btn btn-ghost">&laquo; Content</a>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-head">
+        <h3 class="panel-title">Messages from the Contact Form</h3>
+        <span class="panel-count">{{ messages|length }} total</span>
+    </div>
+    <div class="panel-body">
+        {% if messages %}
+        <div class="table-wrap">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>From</th>
+                        <th>Subject</th>
+                        <th>Message</th>
+                        <th>Received</th>
+                        <th>Status</th>
+                        <th class="th-actions">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for message in messages %}
+                    <tr{% if not message.is_read %} class="unread-row"{% endif %}>
+                        <td>
+                            <strong>{{ message.name }}</strong>
+                            <div class="table-sub">
+                                {{ message.email }}{% if message.phone %} &middot; {{ message.phone }}{% endif %}
+                            </div>
+                        </td>
+                        <td>{{ message.subject or '—' }}</td>
+                        <td class="table-sub">{{ message.message|truncate(90) }}</td>
+                        <td>{{ message.created_at.strftime('%b %d, %Y %H:%M') }}</td>
+                        <td>
+                            {% if message.is_read %}
+                            <span class="badge badge-muted">Read</span>
+                            {% else %}
+                            <span class="badge badge-warning">New</span>
+                            {% endif %}
+                        </td>
+                        <td class="td-actions">
+                            {% if not message.is_read %}
+                            <form method="post" action="{{ url_for('admin.contact_message_read', message_id=message.id) }}" class="inline-form">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-ghost btn-sm">Mark Read</button>
+                            </form>
+                            {% endif %}
+                            <form method="post" action="{{ url_for('admin.contact_message_delete', message_id=message.id) }}" class="inline-form" onsubmit="return confirm('Delete this message?');">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">📬</div>
+            <h3>No messages</h3>
+            <p>Messages submitted through the website contact form will appear here.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

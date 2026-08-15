@@ -1,0 +1,52 @@
+{% extends "admin/base.html" %}
+{% block title %}My Account{% endblock %}
+{% block page_title %}My Account{% endblock %}
+
+{% block content %}
+<div class="toolbar">
+    <div class="toolbar-left">
+        <h1 class="page-title">Account Settings</h1>
+        <p class="page-subtitle">Update your login credentials. You must confirm your current password.</p>
+    </div>
+</div>
+
+<div class="panel panel-narrow">
+    <div class="panel-body">
+        <form method="post" action="{{ url_for('admin.account') }}" class="stack-form" novalidate>
+            {{ form.hidden_tag() }}
+            <div class="form-row">
+                <div class="form-group">
+                    {{ form.username.label(class="form-label") }}
+                    {{ form.username(class="form-control") }}
+                    {% for e in form.username.errors %}<span class="form-error">{{ e }}</span>{% endfor %}
+                </div>
+                <div class="form-group">
+                    {{ form.email.label(class="form-label") }}
+                    {{ form.email(class="form-control") }}
+                    {% for e in form.email.errors %}<span class="form-error">{{ e }}</span>{% endfor %}
+                </div>
+            </div>
+            <div class="form-group">
+                {{ form.current_password.label(class="form-label") }}
+                {{ form.current_password(class="form-control") }}
+                {% for e in form.current_password.errors %}<span class="form-error">{{ e }}</span>{% endfor %}
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    {{ form.new_password.label(class="form-label") }}
+                    {{ form.new_password(class="form-control") }}
+                    {% for e in form.new_password.errors %}<span class="form-error">{{ e }}</span>{% endfor %}
+                </div>
+                <div class="form-group">
+                    {{ form.confirm_password.label(class="form-label") }}
+                    {{ form.confirm_password(class="form-control") }}
+                    {% for e in form.confirm_password.errors %}<span class="form-error">{{ e }}</span>{% endfor %}
+                </div>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">{{ form.submit.label.text }}</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

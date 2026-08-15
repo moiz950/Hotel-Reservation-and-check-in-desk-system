@@ -1,0 +1,76 @@
+{% extends "admin/base.html" %}
+{% block title %}Invoices{% endblock %}
+{% block page_title %}Invoices{% endblock %}
+
+{% block content %}
+<div class="panel">
+    <div class="panel-head">
+        <h3 class="panel-title">All Invoices</h3>
+        <span class="panel-count">{{ pagination.total }} invoice{{ 's' if pagination.total != 1 else '' }}</span>
+    </div>
+    <div class="table-wrap">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Invoice #</th>
+                    <th>Reservation</th>
+                    <th>Guest</th>
+                    <th>Total</th>
+                    <th>Paid</th>
+                    <th>Remaining</th>
+                    <th>Status</th>
+                    <th>Issued</th>
+                    <th class="th-actions">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for invoice in pagination.items %}
+                <tr>
+                    <td><span class="code-badge">{{ invoice.invoice_number }}</span></td>
+                    <td>
+                        <a href="{{ url_for('admin.reservation_detail', reservation_id=invoice.reservation.id) }}" class="table-link">{{ invoice.reservation.reservation_code }}</a>
+                    </td>
+                    <td>
+                        <a href="{{ url_for('admin.guest_detail', guest_id=invoice.reservation.guest.id) }}" class="table-link">{{ invoice.reservation.guest.full_name }}</a>
+                    </td>
+                    <td><strong>{{ invoice.total|money }}</strong></td>
+                    <td class="text-success">{{ invoice.paid|money }}</td>
+                    <td class="{{ 'text-danger' if invoice.remaining > 0 else 'text-success' }}">{{ invoice.remaining|money }}</td>
+                    <td><span class="badge {{ invoice.status|badge }}">{{ invoice.status|title }}</span></td>
+                    <td>{{ invoice.issued_at.strftime('%b %d, %Y') }}</td>
+                    <td class="td-actions">
+                        <a href="{{ url_for('admin.invoice_detail', invoice_id=invoice.id) }}" class="btn btn-sm btn-ghost">View</a>
+                        <a href="{{ url_for('admin.invoice_print', invoice_id=invoice.id) }}" class="btn btn-sm btn-navy" target="_blank">Print</a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="9">
+                        <div class="empty-state">
+                            <div class="empty-icon">🧾</div>
+                            <h4>No invoices yet</h4>
+                            <p>Invoices are generated automatically when a payment is recorded against a reservation.</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if pagination.pages > 1 %}
+    <div class="pagination">
+        {% if pagination.has_prev %}
+        <a href="{{ url_for('admin.invoices', page=pagination.prev_num) }}" class="page-link">&laquo; Prev</a>
+        {% else %}
+        <span class="page-link disabled">&laquo; Prev</span>
+        {% endif %}
+        <span class="page-info">Page {{ pagination.page }} of {{ pagination.pages }}</span>
+        {% if pagination.has_next %}
+        <a href="{{ url_for('admin.invoices', page=pagination.next_num) }}" class="page-link">Next &raquo;</a>
+        {% else %}
+        <span class="page-link disabled">Next &raquo;</span>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

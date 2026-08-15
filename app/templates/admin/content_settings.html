@@ -1,0 +1,56 @@
+{% extends "admin/base.html" %}
+{% block title %}Website Settings{% endblock %}
+{% block page_title %}Website Settings{% endblock %}
+
+{% block content %}
+<div class="toolbar">
+    <div class="toolbar-actions">
+        <a href="{{ url_for('admin.content') }}" class="btn btn-ghost">&laquo; Content</a>
+    </div>
+</div>
+
+<form method="post" action="{{ url_for('admin.content_settings') }}" class="stack-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    {% set groups = {
+        'general': 'General',
+        'branding': 'Branding',
+        'contact': 'Contact Information',
+        'social': 'Social Media',
+        'policies': 'Policies',
+        'homepage': 'Homepage',
+        'footer': 'Footer',
+        'finance': 'Finance'
+    } %}
+
+    {% for group_key, group_label in groups.items() %}
+    <div class="panel panel-narrow">
+        <div class="panel-head">
+            <h3 class="panel-title">{{ group_label }}</h3>
+        </div>
+        <div class="panel-body">
+            <div class="stack-form">
+                {% for key, meta in DEFAULT_SETTINGS.items() if meta.group == group_key %}
+                {% if key not in ('logo', 'favicon') %}
+                <div class="form-group">
+                    <label for="setting-{{ key }}">{{ meta.label }}</label>
+                    {% if key in ('hotel_policies', 'hotel_description', 'footer_about', 'homepage_intro_text') %}
+                    <textarea name="{{ key }}" id="setting-{{ key }}" rows="3" class="form-control">{{ settings.get(key, meta.value) }}</textarea>
+                    {% elif key == 'map_embed' %}
+                    <textarea name="{{ key }}" id="setting-{{ key }}" rows="4" class="form-control" placeholder="Paste an embedded map iframe code">{{ settings.get(key, meta.value) }}</textarea>
+                    {% else %}
+                    <input type="text" name="{{ key }}" id="setting-{{ key }}" value="{{ settings.get(key, meta.value) }}" class="form-control">
+                    {% endif %}
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+    <div class="form-actions">
+        <button type="submit" class="btn btn-gold">Save Settings</button>
+    </div>
+</form>
+{% endblock %}

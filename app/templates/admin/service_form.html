@@ -1,0 +1,67 @@
+{% extends "admin/base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="toolbar">
+    <div class="toolbar-actions">
+        <a href="{{ url_for('admin.services') }}" class="btn btn-ghost">&laquo; Services</a>
+    </div>
+</div>
+
+<div class="panel panel-narrow">
+    <div class="panel-head">
+        <h3 class="panel-title">{{ title }}</h3>
+    </div>
+    <div class="panel-body">
+        <form method="post" action="" class="stack-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <div class="form-group">
+                {{ form.name.label }}
+                {{ form.name(class="form-control", placeholder="e.g. Spa & Wellness") }}
+                {% for error in form.name.errors %}
+                <span class="field-error">{{ error }}</span>
+                {% endfor %}
+            </div>
+
+            <div class="form-group">
+                {{ form.description.label }}
+                {{ form.description(class="form-control", rows="4", placeholder="Describe this service...") }}
+                {% for error in form.description.errors %}
+                <span class="field-error">{{ error }}</span>
+                {% endfor %}
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    {{ form.icon.label }}
+                    {{ form.icon(class="form-control", placeholder="e.g. 💆 or fa-spa") }}
+                    <span class="table-sub">An emoji or CSS icon class shown on the website.</span>
+                    {% for error in form.icon.errors %}
+                    <span class="field-error">{{ error }}</span>
+                    {% endfor %}
+                </div>
+                <div class="form-group">
+                    {{ form.display_order.label }}
+                    {{ form.display_order(class="form-control", placeholder="0") }}
+                    <span class="table-sub">Lower numbers appear first.</span>
+                    {% for error in form.display_order.errors %}
+                    <span class="field-error">{{ error }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="form-group form-group-check">
+                {{ form.is_active() }}
+                {{ form.is_active.label }}
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-gold">{{ form.submit.label.text }}</button>
+                <a href="{{ url_for('admin.services') }}" class="btn btn-ghost">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

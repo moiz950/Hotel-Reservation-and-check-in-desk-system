@@ -1,0 +1,100 @@
+{% extends "admin/base.html" %}
+{% block title %}Maintenance{% endblock %}
+{% block page_title %}Maintenance{% endblock %}
+
+{% block content %}
+<div class="toolbar">
+    <div class="toolbar-actions">
+        <a href="{{ url_for('admin.maintenance_new') }}" class="btn btn-gold">+ New Task</a>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-head">
+        <h3 class="panel-title">Maintenance Tasks</h3>
+        <span class="panel-count">{{ tasks|length }} total</span>
+    </div>
+    <div class="table-wrap">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Task Code</th>
+                    <th>Room</th>
+                    <th>Reason</th>
+                    <th>Status</th>
+                    <th>Requested By</th>
+                    <th>Created</th>
+                    <th>Resolved</th>
+                    <th>Notes</th>
+                    <th class="th-actions">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for task in tasks %}
+                <tr>
+                    <td><span class="code-badge">{{ task.task_code }}</span></td>
+                    <td>
+                        <span class="table-link">{{ task.room.room_number if task.room else '—' }}</span>
+                        <div class="table-sub">
+                            {% if task.room %}
+                            <span class="badge {{ task.room.status|badge }}">{{ task.room.status|title }}</span>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td>{{ task.reason }}</td>
+                    <td><span class="badge {{ task.status|badge }}">{{ task.status|replace('_', ' ')|title }}</span></td>
+                    <td>{{ task.requested_by or '—' }}</td>
+                    <td>{{ task.created_at.strftime('%b %d, %H:%M') }}</td>
+                    <td>{{ task.resolved_at.strftime('%b %d, %H:%M') if task.resolved_at else '—' }}</td>
+                    <td class="td-truncate" title="{{ task.notes or '' }}">{{ task.notes or '—' }}</td>
+                    <td class="td-actions">
+                        {% if task.status != 'completed' %}
+                        <form method="post" action="{{ url_for('admin.maintenance_status', task_id=task.id) }}" class="inline-form">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <select name="status" class="form-control form-control-sm" onchange="this.form.submit()">
+                                <option value="open" {{ 'selected' if task.status == 'open' }}>Open</option>
+                                <option value="in_progress" {{ 'selected' if task.status == 'in_progress' }}>In Progress</option>
+                                <option value="completed" {{ 'selected' if task.status == 'completed' }}>Completed</option>
+                            </select>
+                        </form>
+                        {% else %}
+                        <span class="badge badge-success">Done</span>
+                        {% endif %}
+                        <form method="post" action="{{ url_for('admin.maintenance_delete', task_id=task.id) }}" class="inline-form" onsubmit="return confirm('Delete this maintenance task?');">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="9">
+                        <div class="empty-state">
+                            <div class="empty-icon">🔧</div>
+                            <h4>No maintenance tasks</h4>
+                            <p>Create a maintenance task to take a room out of service.</p>
+                            <a href="{{ url_for('admin.maintenance_new') }}" class="btn btn-gold">+ New Task</a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-head">
+        <h3 class="panel-title">Rooms In Service</h3>
+    </div>
+    <div class="panel-body">
+        <div class="status-legend">
+            {% for room in rooms %}
+            <span class="status-chip"><span class="badge {{ room.status|badge }}">{{ room.status|title }}</span> {{ room.room_number }}</span>
+            {% else %}
+            <p class="muted">No rooms configured.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

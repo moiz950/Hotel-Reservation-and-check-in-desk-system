@@ -1,0 +1,86 @@
+{% extends "admin/base.html" %}
+{% block title %}Payments{% endblock %}
+{% block page_title %}Payments{% endblock %}
+
+{% block content %}
+<div class="toolbar">
+    <form method="get" action="{{ url_for('admin.payments') }}" class="toolbar-form">
+        <div class="form-group">
+            <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="Search by payment code, reservation code or guest...">
+        </div>
+        <button type="submit" class="btn btn-navy">Search</button>
+        {% if q %}
+        <a href="{{ url_for('admin.payments') }}" class="btn btn-ghost">Clear</a>
+        {% endif %}
+    </form>
+</div>
+
+<div class="panel">
+    <div class="panel-head">
+        <h3 class="panel-title">All Payments</h3>
+        <span class="panel-count">{{ pagination.total }} payment{{ 's' if pagination.total != 1 else '' }}</span>
+    </div>
+    <div class="table-wrap">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Payment Code</th>
+                    <th>Reservation</th>
+                    <th>Guest</th>
+                    <th>Amount</th>
+                    <th>Method</th>
+                    <th>Reference</th>
+                    <th>Received</th>
+                    <th>Received By</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for payment in pagination.items %}
+                <tr>
+                    <td><span class="code-badge">{{ payment.payment_code }}</span></td>
+                    <td>
+                        <a href="{{ url_for('admin.reservation_detail', reservation_id=payment.reservation.id) }}" class="table-link">{{ payment.reservation.reservation_code }}</a>
+                    </td>
+                    <td>
+                        <a href="{{ url_for('admin.guest_detail', guest_id=payment.guest.id) }}" class="table-link">{{ payment.guest.full_name }}</a>
+                    </td>
+                    <td><strong>{{ payment.amount|money }}</strong></td>
+                    <td><span class="badge badge-info">{{ payment.method }}</span></td>
+                    <td>{{ payment.reference or '—' }}</td>
+                    <td>{{ payment.received_at.strftime('%b %d, %Y %H:%M') }}</td>
+                    <td>{{ payment.staff.full_name if payment.staff else '—' }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="8">
+                        <div class="empty-state">
+                            <div class="empty-icon">💳</div>
+                            <h4>No payments found</h4>
+                            <p>{% if q %}No payments match your search for "{{ q }}".{% else %}Payments recorded against reservations will appear here.{% endif %}</p>
+                            {% if q %}
+                            <a href="{{ url_for('admin.payments') }}" class="btn btn-navy">Clear Search</a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if pagination.pages > 1 %}
+    <div class="pagination">
+        {% if pagination.has_prev %}
+        <a href="{{ url_for('admin.payments', page=pagination.prev_num, q=q) }}" class="page-link">&laquo; Prev</a>
+        {% else %}
+        <span class="page-link disabled">&laquo; Prev</span>
+        {% endif %}
+        <span class="page-info">Page {{ pagination.page }} of {{ pagination.pages }}</span>
+        {% if pagination.has_next %}
+        <a href="{{ url_for('admin.payments', page=pagination.next_num, q=q) }}" class="page-link">Next &raquo;</a>
+        {% else %}
+        <span class="page-link disabled">Next &raquo;</span>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

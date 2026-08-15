@@ -1,0 +1,145 @@
+{% extends "admin/base.html" %}
+{% block title %}Reservation {{ reservation.reservation_code }}{% endblock %}
+{% block page_title %}Reservation {{ reservation.reservation_code }}{% endblock %}
+
+{% block content %}
+<div class="toolbar">
+    <div class="toolbar-left">
+        <a href="{{ url_for('admin.reservations') }}" class="btn btn-outline">← Back</a>
+        {% if reservation.status == 'pending' %}
+        <form action="{{ url_for('admin.reservation_confirm', reservation_id=reservation.id) }}" method="post" class="inline-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-success">✓ Confirm</button>
+        </form>
+        {% endif %}
+        {% if reservation.is_active %}
+        <a href="{{ url_for('admin.check_in_detail', reservation_id=reservation.id) }}" class="btn btn-navy">⇥ Check-In</a>
+        {% endif %}
+        {% if reservation.status == 'checked_in' %}
+        <a href="{{ url_for('admin.check_out_detail', reservation_id=reservation.id) }}" class="btn btn-navy">⇤ Check-Out</a>
+        {% endif %}
+        {% if reservation.is_active and reservation.payment_status != 'paid' %}
+        <a href="{{ url_for('admin.payment_new', reservation_id=reservation.id) }}" class="btn btn-gold">$ Record Payment</a>
+        {% endif %}
+        <a href="{{ url_for('admin.reservation_edit', reservation_id=reservation.id) }}" class="btn btn-outline">✎ Edit</a>
+        {% if reservation.is_active and reservation.status != 'cancelled' %}
+        <form action="{{ url_for('admin.reservation_cancel', reservation_id=reservation.id) }}" method="post" class="inline-form" onsubmit="return confirm('Cancel this reservation?');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-sm btn-danger">✕ Cancel</button>
+        </form>
+        {% endif %}
+        <form action="{{ url_for('admin.reservation_delete', reservation_id=reservation.id) }}" method="post" class="inline-form" onsubmit="return confirm('Delete this reservation permanently?');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-sm btn-danger-outline">🗑 Delete</button>
+        </form>
+    </div>
+</div>
+
+<div class="detail-grid">
+    <div class="panel">
+        <div class="panel-head"><h3>Reservation Details</h3></div>
+        <table class="detail-table">
+            <tr><th>Code</th><td>{{ reservation.reservation_code }}</td></tr>
+            <tr><th>Status</th><td><span class="badge badge-{{ reservation.status|badge }}">{{ reservation.status|replace('_', ' ')|title }}</span></td></tr>
+            <tr><th>Payment</th><td><span class="badge badge-{{ reservation.payment_status|badge }}">{{ reservation.payment_status|replace('_', ' ')|title }}</span></td></tr>
+            <tr><th>Source</th><td>{{ reservation.source|title }}</td></tr>
+            <tr><th>Check-In</th><td>{{ reservation.check_in_date.strftime('%A, %d %B %Y') }}</td></tr>
+            <tr><th>Check-Out</th><td>{{ reservation.check_out_date.strftime('%A, %d %B %Y') }}</td></tr>
+            <tr><th>Nights</th><td>{{ reservation.nights }}</td></tr>
+            <tr><th>Guests</th><td>{{ reservation.adults }} adult{{ 's' if reservation.adults != 1 else '' }}{% if reservation.children %} + {{ reservation.children }} child{{ 'ren' if reservation.children != 1 else '' }}{% endif %}</td></tr>
+            <tr><th>Created</th><td>{{ reservation.created_at.strftime('%d %b %Y, %H:%M') }}</td></tr>
+            {% if reservation.special_request %}
+            <tr><th>Special Request</th><td>{{ reservation.special_request }}</td></tr>
+            {% endif %}
+        </table>
+    </div>
+
+    <div class="panel">
+        <div class="panel-head"><h3>Guest</h3></div>
+        <table class="detail-table">
+            <tr><th>Name</th><td>{{ reservation.guest.full_name }}</td></tr>
+            <tr><th>Code</th><td>{{ reservation.guest.guest_code }}</td></tr>
+            {% if reservation.guest.email %}<tr><th>Email</th><td>{{ reservation.guest.email }}</td></tr>{% endif %}
+            {% if reservation.guest.phone %}<tr><th>Phone</th><td>{{ reservation.guest.phone }}</td></tr>{% endif %}
+            <tr><th></th><td><a href="{{ url_for('admin.guest_detail', guest_id=reservation.guest.id) }}" class="btn btn-outline btn-sm">View Guest Profile</a></td></tr>
+        </table>
+
+        <div class="panel-head panel-head-margin"><h3>Room</h3></div>
+        <table class="detail-table">
+            <tr><th>Room</th><td>{{ reservation.room.room_number if reservation.room else '—' }}</td></tr>
+            <tr><th>Type</th><td>{{ reservation.room_type.name if reservation.room_type else '—' }}</td></tr>
+            <tr><th>Nightly Rate</th><td>{{ reservation.room_rate|money }}</td></tr>
+            <tr><th>Room Status</th><td>{% if reservation.room %}<span class="badge badge-{{ reservation.room.status|badge }}">{{ reservation.room.status|replace('_', ' ')|title }}</span>{% else %}—{% endif %}</td></tr>
+        </table>
+    </div>
+</div>
+
+<div class="detail-grid">
+    <div class="panel">
+        <div class="panel-head"><h3>Billing Summary</h3></div>
+        <table class="summary-table">
+            <tr><td>Room charges ({{ reservation.room_rate|money }} × {{ reservation.nights }})</td><td>{{ reservation.room_charge|money }}</td></tr>
+            <tr><td>Additional charges</td><td>{{ reservation.additional_charges|money }}</td></tr>
+            <tr><td>Discount</td><td>− {{ reservation.discount|money }}</td></tr>
+            <tr><td>Tax ({{ reservation.tax_rate }}%)</td><td>{{ reservation.tax_amount|money }}</td></tr>
+            <tr class="summary-total"><td>Total</td><td>{{ reservation.total_amount|money }}</td></tr>
+            <tr><td>Paid</td><td>{{ reservation.paid_amount|money }}</td></tr>
+            <tr class="summary-remaining"><td>Remaining</td><td>{{ reservation.remaining_amount|money }}</td></tr>
+        </table>
+    </div>
+
+    <div class="panel">
+        <div class="panel-head">
+            <h3>Payments</h3>
+            {% if reservation.is_active and reservation.payment_status != 'paid' %}
+            <a href="{{ url_for('admin.payment_new', reservation_id=reservation.id) }}" class="btn btn-gold btn-sm">+ Add Payment</a>
+            {% endif %}
+        </div>
+        <div class="table-wrap">
+            <table class="table">
+                <thead>
+                    <tr><th>Code</th><th>Amount</th><th>Method</th><th>Date</th></tr>
+                </thead>
+                <tbody>
+                    {% for pay in reservation.payments.all() %}
+                    <tr>
+                        <td>{{ pay.payment_code }}</td>
+                        <td>{{ pay.amount|money }}</td>
+                        <td>{{ pay.method|replace('_', ' ')|title }}</td>
+                        <td>{{ pay.received_at.strftime('%d %b %Y, %H:%M') }}</td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="4" class="empty-cell">No payments recorded.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% if reservation.invoices.count() %}
+<div class="panel">
+    <div class="panel-head"><h3>Invoices</h3></div>
+    <div class="table-wrap">
+        <table class="table">
+            <thead>
+                <tr><th>Number</th><th>Total</th><th>Paid</th><th>Remaining</th><th>Status</th><th>Issued</th><th></th></tr>
+            </thead>
+            <tbody>
+                {% for inv in reservation.invoices.all() %}
+                <tr>
+                    <td>{{ inv.invoice_number }}</td>
+                    <td>{{ inv.total|money }}</td>
+                    <td>{{ inv.paid|money }}</td>
+                    <td>{{ inv.remaining|money }}</td>
+                    <td><span class="badge badge-{{ inv.status|badge }}">{{ inv.status|replace('_', ' ')|title }}</span></td>
+                    <td>{{ inv.issued_at.strftime('%d %b %Y') }}</td>
+                    <td><a href="{{ url_for('admin.invoice_detail', invoice_id=inv.id) }}" class="btn btn-sm btn-outline">View</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

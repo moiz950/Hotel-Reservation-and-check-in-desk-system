@@ -1,0 +1,130 @@
+{% extends "admin/base.html" %}
+{% block title %}{{ guest.full_name }}{% endblock %}
+{% block page_title %}Guest Profile{% endblock %}
+
+{% block content %}
+<div class="toolbar">
+    <div class="toolbar-actions">
+        <a href="{{ url_for('admin.guests') }}" class="btn btn-ghost">&laquo; All Guests</a>
+        <a href="{{ url_for('admin.guest_edit', guest_id=guest.id) }}" class="btn btn-navy">Edit Guest</a>
+        <a href="{{ url_for('admin.reservation_new') }}" class="btn btn-gold">+ New Reservation</a>
+        {% if guest.reservations.count() == 0 %}
+        <form method="post" action="{{ url_for('admin.guest_delete', guest_id=guest.id) }}" class="inline-form" onsubmit="return confirm('Delete this guest? This cannot be undone.');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-danger">Delete</button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+
+<div class="detail-grid">
+    <div class="panel">
+        <div class="panel-head">
+            <h3 class="panel-title">Guest Information</h3>
+        </div>
+        <div class="detail-body">
+            <div class="detail-avatar">{{ guest.full_name[:1]|upper }}</div>
+            <h2 class="detail-name">{{ guest.full_name }}</h2>
+            <p class="detail-code">{{ guest.guest_code }}</p>
+            <div class="detail-list">
+                <div class="detail-item">
+                    <span class="detail-label">Email</span>
+                    <span class="detail-value">{{ guest.email or '—' }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Phone</span>
+                    <span class="detail-value">{{ guest.phone or '—' }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Address</span>
+                    <span class="detail-value">{{ guest.address or '—' }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">City / Country</span>
+                    <span class="detail-value">{{ guest.city or '—' }}{{ ', ' if guest.city and guest.country else '' }}{{ guest.country or '' }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">ID Type</span>
+                    <span class="detail-value">{{ guest.id_type or '—' }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">ID Number</span>
+                    <span class="detail-value">{{ guest.id_number or '—' }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Member Since</span>
+                    <span class="detail-value">{{ guest.created_at.strftime('%b %d, %Y') }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Current Status</span>
+                    <span class="detail-value">
+                        {% if guest.current_reservation %}
+                        <span class="badge badge-success">In House</span>
+                        {% else %}
+                        <span class="badge badge-muted">No Active Stay</span>
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+            {% if guest.notes %}
+            <div class="detail-notes">
+                <h4>Notes</h4>
+                <p>{{ guest.notes }}</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-head">
+            <h3 class="panel-title">Reservation History</h3>
+            <span class="panel-count">{{ reservations|length }} total</span>
+        </div>
+        <div class="table-wrap">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Room</th>
+                        <th>Dates</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                        <th class="th-actions">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for res in reservations %}
+                    <tr>
+                        <td><a href="{{ url_for('admin.reservation_detail', reservation_id=res.id) }}" class="table-link">{{ res.reservation_code }}</a></td>
+                        <td>{{ res.room.room_number if res.room else '—' }}</td>
+                        <td>
+                            <div>{{ res.check_in_date.strftime('%b %d, %Y') }} → {{ res.check_out_date.strftime('%b %d, %Y') }}</div>
+                            <div class="table-sub">{{ res.nights }} night{{ 's' if res.nights != 1 else '' }}</div>
+                        </td>
+                        <td>{{ res.total_amount|money }}</td>
+                        <td>
+                            <span class="badge {{ res.status|badge }}">{{ res.status|title }}</span>
+                            <div class="table-sub"><span class="badge {{ res.payment_status|badge }}">{{ res.payment_status|title }}</span></div>
+                        </td>
+                        <td class="td-actions">
+                            <a href="{{ url_for('admin.reservation_detail', reservation_id=res.id) }}" class="btn btn-sm btn-ghost">View</a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6">
+                            <div class="empty-state">
+                                <div class="empty-icon">📅</div>
+                                <h4>No reservations yet</h4>
+                                <p>This guest has no reservation history.</p>
+                                <a href="{{ url_for('admin.reservation_new') }}" class="btn btn-gold">+ New Reservation</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

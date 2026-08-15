@@ -1,0 +1,87 @@
+{% extends "admin/base.html" %}
+{% block title %}Rooms{% endblock %}
+{% block page_title %}Rooms{% endblock %}
+
+{% block content %}
+<div class="toolbar">
+    <form action="{{ url_for('admin.rooms') }}" method="get" class="toolbar-form">
+        <input type="text" name="q" value="{{ q }}" placeholder="Search room number…" class="form-control">
+        <select name="status" class="form-control">
+            <option value="">All statuses</option>
+            {% for value, label in statuses %}
+            <option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+        <select name="room_type" class="form-control">
+            <option value="">All types</option>
+            {% for rt in room_types %}
+            <option value="{{ rt.id }}" {% if room_type == rt.id %}selected{% endif %}>{{ rt.name }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="btn btn-navy">Filter</button>
+    </form>
+    <a href="{{ url_for('admin.room_new') }}" class="btn btn-gold">+ Add Room</a>
+</div>
+
+<div class="panel">
+    <div class="table-wrap">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Room</th>
+                    <th>Type</th>
+                    <th>Floor</th>
+                    <th>Price</th>
+                    <th>Capacity</th>
+                    <th>Status</th>
+                    <th>Active</th>
+                    <th class="th-actions">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for room in pagination.items %}
+                <tr>
+                    <td><strong>{{ room.room_number }}</strong></td>
+                    <td>{{ room.room_type.name if room.room_type else '—' }}</td>
+                    <td>{{ room.floor }}</td>
+                    <td>{{ room.price|money }}</td>
+                    <td>{{ room.capacity }}</td>
+                    <td><span class="badge badge-{{ room.status|badge }}">{{ room.status|replace('_', ' ')|title }}</span></td>
+                    <td>{% if room.is_active %}<span class="badge badge-success">Yes</span>{% else %}<span class="badge badge-secondary">No</span>{% endif %}</td>
+                    <td class="td-actions">
+                        <a href="{{ url_for('admin.room_edit', room_id=room.id) }}" class="btn btn-sm btn-outline">Edit</a>
+                        <a href="{{ url_for('admin.room_images', room_id=room.id) }}" class="btn btn-sm btn-outline">Images</a>
+                        <form action="{{ url_for('admin.room_status', room_id=room.id) }}" method="post" class="inline-form">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <select name="status" class="form-control form-control-sm" onchange="this.form.submit()">
+                                {% for value, label in statuses %}
+                                <option value="{{ value }}" {% if room.status == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </form>
+                        <form action="{{ url_for('admin.room_delete', room_id=room.id) }}" method="post" class="inline-form" onsubmit="return confirm('Delete room {{ room.room_number }}?');">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="8" class="empty-cell">No rooms found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if pagination.pages > 1 %}
+    <div class="pagination">
+        {% if pagination.has_prev %}
+        <a href="{{ url_for('admin.rooms', page=pagination.prev_num, q=q, status=status, room_type=room_type) }}" class="page-link">‹ Prev</a>
+        {% endif %}
+        <span class="page-info">Page {{ pagination.page }} of {{ pagination.pages }}</span>
+        {% if pagination.has_next %}
+        <a href="{{ url_for('admin.rooms', page=pagination.next_num, q=q, status=status, room_type=room_type) }}" class="page-link">Next ›</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
