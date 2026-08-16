@@ -40,6 +40,45 @@ def _ensure_instance_and_db(app):
         db.create_all()
 
 
+def _ensure_admin_user(app):
+    """Optionally bootstrap an admin account from environment variables.
+
+    If ADMIN_USERNAME and ADMIN_PASSWORD are set in the environment (e.g. via
+    the deployed .env file), create or promote an administrator account on
+    startup. This makes a fresh deployment (e.g. PythonAnywhere) usable without
+    manually running `flask create-admin`.
+    """
+    username = app.config.get("ADMIN_USERNAME")
+    password = app.config.get("ADMIN_PASSWORD")
+    if not username or not password:
+        return
+
+    from app.models import User
+
+    with app.app_context():
+        user = User.query.filter(
+            (User.username == username)
+            | (User.email == (app.config.get("ADMIN_EMAIL") or ""))
+        ).first()
+        if user:
+            user.role = "admin"
+            user.is_active_account = True
+            action = "promoted to admin"
+        else:
+            user = User(
+                username=username,
+                email=(app.config.get("ADMIN_EMAIL") or f"{username}@example.com").strip().lower(),
+                full_name=app.config.get("ADMIN_FULL_NAME") or "Administrator",
+                role="admin",
+                is_active_account=True,
+            )
+            user.set_password(password)
+            db.session.add(user)
+            action = "created"
+        db.session.commit()
+        print(f"Admin account '{username}' {action} from environment configuration.")
+
+
 def create_app(config_name=None):
     """Create and configure the Flask application."""
     if config_name is None:
@@ -105,6 +144,9 @@ def create_app(config_name=None):
 
     # --- Self-healing: create instance/ folder and tables if missing ---
     _ensure_instance_and_db(app)
+
+    # --- Bootstrap an admin account from env vars if configured ---
+    _ensure_admin_user(app)
 
     return app
 

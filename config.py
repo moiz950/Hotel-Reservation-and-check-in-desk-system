@@ -39,6 +39,15 @@ class Config:
     # --- App metadata ---
     APP_NAME = "Hotel Reservation & Check-In Desk System"
 
+    # --- Initial admin bootstrap (optional) ---
+    # If these are set, the app creates/promotes an admin account on startup.
+    # Handy for a first deploy (e.g. PythonAnywhere) where no admin exists yet.
+    # Leave unset to disable this behaviour.
+    ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME")
+    ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL")
+    ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD")
+    ADMIN_FULL_NAME = os.environ.get("ADMIN_FULL_NAME", "Administrator")
+
 
 class DevelopmentConfig(Config):
     DEBUG = True

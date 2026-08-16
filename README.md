@@ -96,13 +96,35 @@ SECRET_KEY=your-long-random-secret-key
 ### 3. Initialise the database
 
 ```bash
-flask init-db        # create all tables
-flask seed           # create tables + populate realistic demo data
+flask init-db        # create all tables (empty)
 ```
 
-> `flask seed` is **idempotent** — running it again skips when an admin user already exists.
+> **Note:** Demo/seed data has been **disabled**. `flask seed` no longer inserts
+> any accounts or sample data — the database only ever contains real data you
+> enter through the app.
 
-### 4. Run the application
+### 4. Create the first admin account
+
+On a fresh deployment (e.g. PythonAnywhere) there are **no accounts yet**, so
+login will fail with "Invalid username or password". Create an admin in one of
+two ways:
+
+**Option A — environment variables (recommended for deploys).** Add these to
+your `.env` and reload the app — the admin is created automatically on startup:
+
+```ini
+ADMIN_USERNAME=admin
+ADMIN_EMAIL=admin@yourhotel.com
+ADMIN_PASSWORD=your-strong-password
+```
+
+**Option B — CLI command.** Run this in a Bash/terminal with the venv active:
+
+```bash
+flask create-admin
+```
+
+### 5. Run the application
 
 ```bash
 python run.py
@@ -126,6 +148,10 @@ All configuration lives in [`config.py`](config.py) and reads from environment v
 | `MAX_CONTENT_LENGTH` | Max upload size (bytes) | 8 MB |
 | `HOST` / `PORT` | Server bind address | `127.0.0.1` / `5000` |
 | `FLASK_DEBUG` | Debug mode toggle (`1`/`0`) | `1` |
+| `ADMIN_USERNAME` | Bootstrap admin username (optional) | unset |
+| `ADMIN_EMAIL` | Bootstrap admin email (optional) | unset |
+| `ADMIN_PASSWORD` | Bootstrap admin password (optional) | unset |
+| `ADMIN_FULL_NAME` | Bootstrap admin display name | `Administrator` |
 
 
 
@@ -151,15 +177,17 @@ flask db upgrade     # apply migrations
 
 ## Demo Accounts
 
-Seeded by `flask seed`:
+> **Demo/seed data has been disabled.** `flask seed` no longer creates any
+> accounts. On a fresh database there are no users until you create one.
 
-| Role  | Username   | Password   |
-|-------|------------|------------|
-| Admin | `admin`    | `admin123` |
-| Staff | `reception`| `staff123` |
-| Guest | `guest`    | `guest123` |
+Create the first administrator with the `flask create-admin` CLI command (or the
+`ADMIN_*` environment variables described in [Configuration](#configuration)).
+After that, additional staff and guest accounts are created through the app's
+registration form and the admin **Staff** panel.
 
-> Change these passwords before any real deployment.
+If you are migrating an existing local database, simply upload your
+`instance/hotel.db` file to the server — your existing admin and all data will
+be available immediately (no need to create a new account).
 
 ---
 
