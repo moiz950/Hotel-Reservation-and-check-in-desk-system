@@ -105,12 +105,25 @@ flask init-db        # create all tables (empty)
 
 ### 4. Create the first admin account
 
-On a fresh deployment (e.g. PythonAnywhere) there are **no accounts yet**, so
-login will fail with "Invalid username or password". Create an admin in one of
-two ways:
+On a fresh deployment (e.g. PythonAnywhere) the database starts **empty**, so
+there is no account to log in with. The app handles this automatically:
 
-**Option A — environment variables (recommended for deploys).** Add these to
-your `.env` and reload the app — the admin is created automatically on startup:
+**Automatic default admin (zero-config).** If the database has **no users at
+all** on startup, the app creates a default administrator for you:
+
+```
+username: admin
+password: admin123
+```
+
+> **Security:** Sign in at once and change this password from the admin
+> **Account** page. The default admin is only created when the database is
+> completely empty — it never overwrites an existing account.
+
+**Option A — custom environment variables (recommended for deploys).** If you
+prefer your own credentials, add these to your `.env` and reload the app — the
+admin is created/updated automatically on startup (this takes priority over the
+default admin above):
 
 ```ini
 ADMIN_USERNAME=admin

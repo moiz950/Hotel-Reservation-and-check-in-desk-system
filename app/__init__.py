@@ -20,7 +20,6 @@ login_manager.login_view = "auth.login"
 login_manager.login_message = "Please sign in to access that page."
 login_manager.login_message_category = "error"
 
-
 def _ensure_instance_and_db(app):
     """Create the instance/ folder and database tables if they are missing.
 
@@ -39,45 +38,72 @@ def _ensure_instance_and_db(app):
     with app.app_context():
         db.create_all()
 
-
 def _ensure_admin_user(app):
-    """Optionally bootstrap an admin account from environment variables.
+    """Bootstrap an admin account so a fresh deploy is immediately usable.
 
-    If ADMIN_USERNAME and ADMIN_PASSWORD are set in the environment (e.g. via
-    the deployed .env file), create or promote an administrator account on
-    startup. This makes a fresh deployment (e.g. PythonAnywhere) usable without
-    manually running `flask create-admin`.
+    Priority:
+      1. If ADMIN_USERNAME and ADMIN_PASSWORD are set in the environment (e.g.
+         via the deployed .env file), create or promote that administrator.
+      2. Otherwise, if the database has NO users at all (a brand-new deploy such
+         as PythonAnywhere where instance/hotel.db was never uploaded), create a
+         default admin (admin / admin123) so you are never locked out of login.
+         Change this password immediately after your first sign-in.
+
+    This guarantees the "Invalid username or password" problem cannot happen on
+    a fresh deployment, while still allowing custom credentials via env vars.
     """
-    username = app.config.get("ADMIN_USERNAME")
-    password = app.config.get("ADMIN_PASSWORD")
-    if not username or not password:
-        return
-
     from app.models import User
 
+    username = app.config.get("ADMIN_USERNAME")
+    password = app.config.get("ADMIN_PASSWORD")
+
     with app.app_context():
-        user = User.query.filter(
-            (User.username == username)
-            | (User.email == (app.config.get("ADMIN_EMAIL") or ""))
-        ).first()
-        if user:
-            user.role = "admin"
-            user.is_active_account = True
-            action = "promoted to admin"
-        else:
+        # Case 1: explicit admin credentials supplied via environment.
+        if username and password:
+            user = User.query.filter(
+                (User.username == username)
+                | (User.email == (app.config.get("ADMIN_EMAIL") or ""))
+            ).first()
+            if user:
+                user.role = "admin"
+                user.is_active_account = True
+                action = "promoted to admin"
+            else:
+                user = User(
+                    username=username,
+                    email=(app.config.get("ADMIN_EMAIL") or f"{username}@example.com").strip().lower(),
+                    full_name=app.config.get("ADMIN_FULL_NAME") or "Administrator",
+                    role="admin",
+                    is_active_account=True,
+                )
+                user.set_password(password)
+                db.session.add(user)
+                action = "created"
+            db.session.commit()
+            print(f"Admin account '{username}' {action} from environment configuration.")
+            return
+
+        # Case 2: no admin env vars -> create a default admin only if the
+        # database is completely empty (fresh deploy). Never overwrite an
+        # existing account.
+        if User.query.count() == 0:
+            default_username = "admin"
+            default_password = "admin123"
             user = User(
-                username=username,
-                email=(app.config.get("ADMIN_EMAIL") or f"{username}@example.com").strip().lower(),
-                full_name=app.config.get("ADMIN_FULL_NAME") or "Administrator",
+                username=default_username,
+                email="admin@hotel.local",
+                full_name="Administrator",
                 role="admin",
                 is_active_account=True,
             )
-            user.set_password(password)
+            user.set_password(default_password)
             db.session.add(user)
-            action = "created"
-        db.session.commit()
-        print(f"Admin account '{username}' {action} from environment configuration.")
-
+            db.session.commit()
+            print(
+                "WARNING: No users existed, so a default admin was created "
+                f"(username='{default_username}', password='{default_password}'). "
+                "Please sign in and change this password immediately."
+            )
 
 def create_app(config_name=None):
     """Create and configure the Flask application."""
@@ -150,7 +176,6 @@ def create_app(config_name=None):
 
     return app
 
-
 def register_error_handlers(app):
     """Professional, non-technical error pages."""
 
@@ -196,14 +221,12 @@ def register_error_handlers(app):
     def csrf_error(e):
         return render_error("400", "Session Expired", str(e.description)), 400
 
-
 def render_error(code, title, message):
     from flask import render_template
 
     return render_template(
         "error.html", code=code, title=title, message=message
     )
-
 
 def register_cli(app):
     """Custom CLI commands for database setup and seeding."""
