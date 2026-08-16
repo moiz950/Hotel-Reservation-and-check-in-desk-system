@@ -52,7 +52,7 @@ A complete, production-style hotel management platform built with **Flask**, fea
 | Layer      | Technology |
 |------------|------------|
 | Backend    | Python 3, Flask 3 (application factory + blueprints) |
-| Database   | PostgreSQL (via `DATABASE_URL`) with SQLite fallback for local dev |
+| Database   | SQLite (local file in `instance/hotel.db`) |
 | ORM        | Flask-SQLAlchemy, Flask-Migrate |
 | Forms      | WTForms + Flask-WTF (CSRF protected) |
 | Auth       | Flask-Login, Werkzeug password hashing |
@@ -90,7 +90,7 @@ Copy the example `.env` (or create one) — see [Configuration](#configuration):
 ```bash
 FLASK_ENV=development
 SECRET_KEY=your-long-random-secret-key
-# DATABASE_URL=postgresql://user:password@localhost:5432/hotel_db
+# Database is SQLite (instance/hotel.db) - no DATABASE_URL needed
 ```
 
 ### 3. Initialise the database
@@ -122,15 +122,15 @@ All configuration lives in [`config.py`](config.py) and reads from environment v
 |----------|---------|---------|
 | `FLASK_ENV` | `development`, `production` or `testing` | `development` |
 | `SECRET_KEY` | Flask session signing key | dev-only fallback |
-| `DATABASE_URL` | PostgreSQL connection string | empty → local SQLite |
+| `DATABASE_URL` | _(removed)_ - SQLite is used directly |
 | `MAX_CONTENT_LENGTH` | Max upload size (bytes) | 8 MB |
 | `HOST` / `PORT` | Server bind address | `127.0.0.1` / `5000` |
 | `FLASK_DEBUG` | Debug mode toggle (`1`/`0`) | `1` |
 
-**PostgreSQL example:**
+
 
 ```ini
-DATABASE_URL=postgresql://hotel_user:strong_password@localhost:5432/hotel_db
+
 ```
 
 ---

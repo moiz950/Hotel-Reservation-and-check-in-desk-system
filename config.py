@@ -18,15 +18,11 @@ class Config:
     SECRET_KEY = os.environ.get("SECRET_KEY", "dev-only-insecure-key-change-me")
 
     # --- Database ---
-    # Prefer PostgreSQL via DATABASE_URL.
-    # Falls back to a local SQLite file for zero-setup development.
-    DATABASE_URL = os.environ.get("DATABASE_URL", "")
-    if DATABASE_URL:
-        SQLALCHEMY_DATABASE_URI = DATABASE_URL
-    else:
-        SQLALCHEMY_DATABASE_URI = "sqlite:///" + os.path.join(
-            BASE_DIR, "instance", "hotel.db"
-        )
+    # SQLite database stored locally in the instance/ folder.
+    # This keeps the project zero-setup and fully self-contained.
+    SQLALCHEMY_DATABASE_URI = "sqlite:///" + os.path.join(
+        BASE_DIR, "instance", "hotel.db"
+    )
 
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
