@@ -21,6 +21,25 @@ login_manager.login_message = "Please sign in to access that page."
 login_manager.login_message_category = "error"
 
 
+def _ensure_instance_and_db(app):
+    """Create the instance/ folder and database tables if they are missing.
+
+    The instance/ directory and hotel.db are gitignored, so on a fresh deploy
+    (e.g. PythonAnywhere) they may not exist yet. Without this, SQLite cannot
+    create the database file and every request returns a 500 error. This makes
+    the app self-healing on startup without manual `flask init-db`.
+    """
+    # The SQLite URI looks like sqlite:///C:/.../instance/hotel.db
+    uri = app.config.get("SQLALCHEMY_DATABASE_URI", "")
+    if uri.startswith("sqlite:///"):
+        db_path = uri[len("sqlite:///"):]
+        db_dir = os.path.dirname(db_path)
+        if db_dir:
+            os.makedirs(db_dir, exist_ok=True)
+    with app.app_context():
+        db.create_all()
+
+
 def create_app(config_name=None):
     """Create and configure the Flask application."""
     if config_name is None:
@@ -84,6 +103,9 @@ def create_app(config_name=None):
     # --- CLI commands ---
     register_cli(app)
 
+    # --- Self-healing: create instance/ folder and tables if missing ---
+    _ensure_instance_and_db(app)
+
     return app
 
 
@@ -114,6 +136,11 @@ def register_error_handlers(app):
 
     @app.errorhandler(500)
     def server_error(_e):
+        # Roll back any failed session so the next request is clean.
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
         return (
             render_error(
                 "500",
