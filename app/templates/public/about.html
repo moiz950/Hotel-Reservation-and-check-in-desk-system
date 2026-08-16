@@ -16,34 +16,50 @@
         <div class="about-text">
             <span class="section-eyebrow">Welcome</span>
             <h2 class="section-title">A Legacy of Hospitality</h2>
-            <p>{{ settings.get('hotel_description', '') }}</p>
-            <p>From the moment you arrive, our dedicated team is committed to making your stay
-            effortless and memorable. Every detail — from the crisp linens to the warm welcome —
-            is crafted with care.</p>
-            <p>Whether you are travelling for business or leisure, our central location, refined
-            rooms, and attentive service ensure you feel right at home.</p>
+            {% if about_story %}
+                {% for block in about_story %}
+                <p>{{ block.body }}</p>
+                {% endfor %}
+            {% else %}
+                <p>{{ settings.get('hotel_description', '') }}</p>
+                <p>From the moment you arrive, our dedicated team is committed to making your stay
+                effortless and memorable. Every detail — from the crisp linens to the warm welcome —
+                is crafted with care.</p>
+                <p>Whether you are travelling for business or leisure, our central location, refined
+                rooms, and attentive service ensure you feel right at home.</p>
+            {% endif %}
         </div>
         <div class="about-highlights">
-            <div class="highlight-card">
-                <span class="highlight-icon">🏨</span>
-                <h3>Elegant Accommodation</h3>
-                <p>Thoughtfully designed rooms and suites with premium amenities.</p>
-            </div>
-            <div class="highlight-card">
-                <span class="highlight-icon">🤝</span>
-                <h3>Personalised Service</h3>
-                <p>A warm, attentive team available around the clock.</p>
-            </div>
-            <div class="highlight-card">
-                <span class="highlight-icon">📍</span>
-                <h3>Prime Location</h3>
-                <p>Conveniently situated near the city's best attractions and business hubs.</p>
-            </div>
-            <div class="highlight-card">
-                <span class="highlight-icon">✨</span>
-                <h3>Attention to Detail</h3>
-                <p>Immaculate rooms, thoughtful touches, and consistent quality.</p>
-            </div>
+            {% if about_highlights %}
+                {% for card in about_highlights %}
+                <div class="highlight-card">
+                    {% if card.icon %}<span class="highlight-icon">{{ card.icon }}</span>{% endif %}
+                    <h3>{{ card.title }}</h3>
+                    {% if card.body %}<p>{{ card.body }}</p>{% endif %}
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="highlight-card">
+                    <span class="highlight-icon">🏨</span>
+                    <h3>Elegant Accommodation</h3>
+                    <p>Thoughtfully designed rooms and suites with premium amenities.</p>
+                </div>
+                <div class="highlight-card">
+                    <span class="highlight-icon">🤝</span>
+                    <h3>Personalised Service</h3>
+                    <p>A warm, attentive team available around the clock.</p>
+                </div>
+                <div class="highlight-card">
+                    <span class="highlight-icon">📍</span>
+                    <h3>Prime Location</h3>
+                    <p>Conveniently situated near the city's best attractions and business hubs.</p>
+                </div>
+                <div class="highlight-card">
+                    <span class="highlight-icon">✨</span>
+                    <h3>Attention to Detail</h3>
+                    <p>Immaculate rooms, thoughtful touches, and consistent quality.</p>
+                </div>
+            {% endif %}
         </div>
     </div>
 </section>

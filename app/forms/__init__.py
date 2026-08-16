@@ -288,6 +288,25 @@ class ServiceForm(FlaskForm):
     submit = SubmitField("Save Service")
 
 
+class AboutContentForm(FlaskForm):
+    SECTION_CHOICES = [
+        ("story", "Story paragraph (main text column)"),
+        ("highlight", "Highlight card (right column)"),
+    ]
+    section = SelectField("Section", choices=SECTION_CHOICES, validators=[DataRequired()])
+    title = StringField("Title", validators=[DataRequired(), Length(max=160)])
+    body = TextAreaField("Content", validators=[Optional()])
+    icon = StringField("Icon (emoji or class)", validators=[Optional(), Length(max=60)])
+    display_order = IntegerField("Display Order", validators=[Optional()], default=0)
+    is_active = BooleanField("Active")
+    submit = SubmitField("Save Content")
+
+    def validate_icon(self, field):
+        # Icon only applies to highlight cards; clear it for story paragraphs.
+        if self.section.data == "story" and field.data:
+            field.data = ""
+
+
 class ContactForm(FlaskForm):
     name = StringField("Your Name", validators=[DataRequired(), Length(max=120)])
     email = StringField("Email", validators=[DataRequired(), Email(), Length(max=160)])

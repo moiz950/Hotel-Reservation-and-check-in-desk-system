@@ -1,5 +1,6 @@
 """Application factory for the Hotel Reservation & Check-In Desk System."""
 import os
+import click
 from flask import Flask
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
@@ -137,11 +138,10 @@ def render_error(code, title, message):
 
 def register_cli(app):
     """Custom CLI commands for database setup and seeding."""
-    from app.utils.seed import seed_data
 
     @app.cli.command("init-db")
     def init_db():
-        """Create all database tables."""
+        """Create all database tables (empty)."""
         from app import db as _db
 
         _db.create_all()
@@ -149,9 +149,13 @@ def register_cli(app):
 
     @app.cli.command("seed")
     def seed_cmd():
-        """Create tables (if needed) and populate demo data."""
-        from app import db as _db
+        """DISABLED: demo/seed data has been removed from this project.
 
-        _db.create_all()
-        seed_data()
-        print("Database seeded with demo data.")
+        The seed command no longer inserts fake/demo data. The database
+        should only contain real data entered through the application.
+        """
+        print(
+            "The 'seed' command is disabled. Demo/fake data is no longer "
+            "added to the database. Use 'flask init-db' to create empty "
+            "tables if needed."
+        )

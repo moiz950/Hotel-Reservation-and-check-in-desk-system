@@ -1,0 +1,113 @@
+{% extends "admin/base.html" %}
+{% block title %}About Us Content{% endblock %}
+{% block page_title %}About Us Page Content{% endblock %}
+
+{% macro item_row(item) %}
+<tr>
+    <td>
+        <strong>{{ item.title }}</strong>
+    </td>
+    <td class="table-sub">{{ item.body|truncate(80) if item.body else '—' }}</td>
+    <td>
+        {% if item.icon %}
+        <span class="content-icon">{{ item.icon }}</span>
+        {% else %}
+        <span class="table-sub">—</span>
+        {% endif %}
+    </td>
+    <td>{{ item.display_order }}</td>
+    <td>
+        {% if item.is_active %}
+        <span class="badge badge-success">Active</span>
+        {% else %}
+        <span class="badge badge-muted">Inactive</span>
+        {% endif %}
+    </td>
+    <td class="td-actions">
+        <a href="{{ url_for('admin.about_content_edit', item_id=item.id) }}" class="btn btn-ghost btn-sm">Edit</a>
+        <form method="post" action="{{ url_for('admin.about_content_delete', item_id=item.id) }}" class="inline-form" onsubmit="return confirm('Delete this content block?');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+        </form>
+    </td>
+</tr>
+{% endmacro %}
+
+{% block content %}
+<div class="toolbar">
+    <div class="toolbar-actions">
+        <a href="{{ url_for('admin.content') }}" class="btn btn-ghost">&laquo; Content</a>
+        <a href="{{ url_for('admin.about_content_new') }}" class="btn btn-navy">+ New Content</a>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-head">
+        <h3 class="panel-title">Story Paragraphs</h3>
+        <span class="panel-count">{{ story|length }} total</span>
+    </div>
+    <div class="panel-body">
+        {% if story %}
+        <div class="table-wrap">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Content</th>
+                        <th>Icon</th>
+                        <th>Order</th>
+                        <th>Status</th>
+                        <th class="th-actions">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in story %}{{ item_row(item) }}{% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">📝</div>
+            <h3>No story paragraphs yet</h3>
+            <p>Add paragraphs for the main "Our Story" text column on the About page.</p>
+            <a href="{{ url_for('admin.about_content_new') }}" class="btn btn-gold">Add Story Paragraph</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-head">
+        <h3 class="panel-title">Highlight Cards</h3>
+        <span class="panel-count">{{ highlights|length }} total</span>
+    </div>
+    <div class="panel-body">
+        {% if highlights %}
+        <div class="table-wrap">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Content</th>
+                        <th>Icon</th>
+                        <th>Order</th>
+                        <th>Status</th>
+                        <th class="th-actions">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in highlights %}{{ item_row(item) }}{% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">✨</div>
+            <h3>No highlight cards yet</h3>
+            <p>Add cards (icon, title, text) for the right-hand highlights column on the About page.</p>
+            <a href="{{ url_for('admin.about_content_new') }}" class="btn btn-gold">Add Highlight Card</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

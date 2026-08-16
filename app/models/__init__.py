@@ -13,6 +13,7 @@ from app.models.content import (
     PromotionalBanner,
     Service,
     ContactMessage,
+    AboutContent,
 )
 from app.models.notification import Notification, ActivityLog
 from app.models.media import RoomImage, SpecialOffer, ThemeSetting
@@ -35,6 +36,7 @@ __all__ = [
     "PromotionalBanner",
     "Service",
     "ContactMessage",
+    "AboutContent",
     "Notification",
     "ActivityLog",
     "RoomImage",

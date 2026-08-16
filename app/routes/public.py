@@ -24,6 +24,7 @@ from app.models import (
     ContactMessage,
     SpecialOffer,
     ThemeSetting,
+    AboutContent,
 )
 from app.forms import ContactForm
 from app.services.availability import available_rooms, validate_dates
@@ -305,7 +306,23 @@ def confirmation(reservation_id):
 
 @public_bp.route("/about")
 def about():
-    return render_template("public/about.html")
+    story = (
+        AboutContent.query.filter_by(
+            section=AboutContent.SECTION_STORY, is_active=True
+        )
+        .order_by(AboutContent.display_order, AboutContent.id)
+        .all()
+    )
+    highlights = (
+        AboutContent.query.filter_by(
+            section=AboutContent.SECTION_HIGHLIGHT, is_active=True
+        )
+        .order_by(AboutContent.display_order, AboutContent.id)
+        .all()
+    )
+    return render_template(
+        "public/about.html", about_story=story, about_highlights=highlights
+    )
 
 
 @public_bp.route("/services")

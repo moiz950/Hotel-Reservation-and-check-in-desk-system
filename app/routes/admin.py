@@ -34,6 +34,7 @@ from app.models import (
     WebsiteSetting,
     Service,
     ContactMessage,
+    AboutContent,
     Notification,
     ActivityLog,
     RoomImage,
@@ -51,6 +52,7 @@ from app.forms import (
     HeroBannerForm,
     PromoBannerForm,
     ServiceForm,
+    AboutContentForm,
     StaffForm,
     CheckInForm,
     CheckOutForm,
@@ -1821,13 +1823,13 @@ def branding():
         logo = request.files.get("logo")
         favicon = request.files.get("favicon")
         if logo and logo.filename:
-            path = save_upload(logo, "branding")
+            path = save_upload(logo, "branding", max_size=(240, 80))
             if path:
                 old = settings_value("logo")
                 delete_upload(old)
                 _set_setting("logo", path)
         if favicon and favicon.filename:
-            path = save_upload(favicon, "branding")
+            path = save_upload(favicon, "branding", max_size=(64, 64))
             if path:
                 old = settings_value("favicon")
                 delete_upload(old)
@@ -1840,7 +1842,7 @@ def branding():
         for bkey in ("banner_rooms", "banner_about", "banner_contact", "banner_services"):
             f = request.files.get(bkey)
             if f and f.filename:
-                path = save_upload(f, "banners")
+                path = save_upload(f, "banners", max_size=(1920, 480))
                 if path:
                     old = settings_value(bkey)
                     delete_upload(old)
@@ -1967,6 +1969,104 @@ def service_delete(service_id):
     )
     flash("Service deleted.", "success")
     return redirect(url_for("admin.services"))
+
+
+@admin_bp.route("/content/about")
+@permission_required("content.manage")
+def about_content():
+    items = AboutContent.query.order_by(
+        AboutContent.section, AboutContent.display_order, AboutContent.id
+    ).all()
+    story = [i for i in items if i.section == AboutContent.SECTION_STORY]
+    highlights = [i for i in items if i.section == AboutContent.SECTION_HIGHLIGHT]
+    return render_template(
+        "admin/about_content.html",
+        story=story,
+        highlights=highlights,
+    )
+
+
+@admin_bp.route("/content/about/new", methods=["GET", "POST"])
+@permission_required("content.manage")
+def about_content_new():
+    form = AboutContentForm()
+    if form.validate_on_submit():
+        item = AboutContent(
+            section=form.section.data,
+            title=form.title.data,
+            body=form.body.data,
+            icon=form.icon.data or None,
+            display_order=form.display_order.data or 0,
+            is_active=form.is_active.data,
+        )
+        db.session.add(item)
+        db.session.flush()
+        _commit_log(
+            "About content added",
+            "about_content",
+            item.id,
+            f"About content '{item.title}' ({item.section}) created",
+            "About content added",
+            f"About content '{item.title}' was added.",
+            "success",
+            url_for("admin.about_content"),
+        )
+        flash("About content added.", "success")
+        return redirect(url_for("admin.about_content"))
+    return render_template(
+        "admin/about_content_form.html", form=form, title="Add About Content"
+    )
+
+
+@admin_bp.route("/content/about/<int:item_id>/edit", methods=["GET", "POST"])
+@permission_required("content.manage")
+def about_content_edit(item_id):
+    item = AboutContent.query.get_or_404(item_id)
+    form = AboutContentForm(obj=item)
+    if form.validate_on_submit():
+        item.section = form.section.data
+        item.title = form.title.data
+        item.body = form.body.data
+        item.icon = form.icon.data or None
+        item.display_order = form.display_order.data or 0
+        item.is_active = form.is_active.data
+        _commit_log(
+            "About content edited",
+            "about_content",
+            item.id,
+            f"About content '{item.title}' ({item.section}) updated",
+            "About content edited",
+            f"About content '{item.title}' was updated.",
+            "info",
+            url_for("admin.about_content"),
+        )
+        flash("About content updated.", "success")
+        return redirect(url_for("admin.about_content"))
+    return render_template(
+        "admin/about_content_form.html",
+        form=form,
+        title="Edit About Content",
+        item=item,
+    )
+
+
+@admin_bp.route("/content/about/<int:item_id>/delete", methods=["POST"])
+@permission_required("content.manage")
+def about_content_delete(item_id):
+    item = AboutContent.query.get_or_404(item_id)
+    name = item.title
+    db.session.delete(item)
+    _commit_log(
+        "About content deleted",
+        "about_content",
+        item_id,
+        f"About content '{name}' deleted",
+        "About content deleted",
+        f"About content '{name}' was removed.",
+        "warning",
+    )
+    flash("About content deleted.", "success")
+    return redirect(url_for("admin.about_content"))
 
 
 @admin_bp.route("/content/contact-messages")

@@ -93,3 +93,32 @@ class ContactMessage(db.Model):
 
     def __repr__(self):
         return f"<ContactMessage {self.name} {self.subject}>"
+
+
+class AboutContent(db.Model):
+    """Editable content blocks for the public About Us page.
+
+    Each block belongs to a section:
+      - "story": paragraphs in the main "Our Story" text column
+      - "highlight": cards in the highlights column (icon + title + body)
+
+    Admins can add, edit, reorder, and delete blocks from the admin panel.
+    """
+
+    __tablename__ = "about_content"
+
+    SECTION_STORY = "story"
+    SECTION_HIGHLIGHT = "highlight"
+
+    id = db.Column(db.Integer, primary_key=True)
+    section = db.Column(db.String(40), nullable=False, default=SECTION_STORY)
+    title = db.Column(db.String(160), nullable=False)
+    body = db.Column(db.Text, nullable=True)
+    icon = db.Column(db.String(60), nullable=True)  # emoji or CSS icon class
+    display_order = db.Column(db.Integer, nullable=False, default=0)
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    def __repr__(self):
+        return f"<AboutContent {self.section}:{self.title}>"

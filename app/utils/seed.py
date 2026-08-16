@@ -1,12 +1,12 @@
 """Seed data for the Hotel Reservation & Check-In Desk System.
 
-Run with:  flask seed
-Creates tables (if needed) and populates realistic demo data covering every
-module: users, staff, guests, room types, rooms, reservations, check-ins,
-check-outs, payments, invoices, housekeeping, maintenance, website settings,
-hero/promo banners, services, notifications and activity logs.
+NOTE: Demo/seed data has been DISABLED for this project. The database should
+only contain real data entered through the application. The `seed_data()`
+function below is now a no-op so that fake/demo data can never be reintroduced,
+and the `flask seed` CLI command has also been disabled in `app/__init__.py`.
 
-The function is idempotent: it skips seeding when an admin user already exists.
+The helper functions below are retained only so existing imports do not break;
+they are no longer invoked by `seed_data()`.
 """
 from datetime import date, datetime, timedelta
 
@@ -687,30 +687,14 @@ def _seed_notifications(admin):
 
 
 def seed_data():
-    """Populate the database with realistic demo data (idempotent)."""
-    if User.query.filter_by(username="admin").first():
-        print("Seed skipped — admin user already exists.")
-        return
+    """DISABLED: demo/seed data has been removed from this project.
 
-    admin, staff_user, guest_user = _seed_users()
-    room_types = _seed_room_types()
-    rooms = _seed_rooms(room_types)
-    guests = _seed_guests(guest_user)
-    reservations = _seed_reservations(guests, rooms, admin)
-    _seed_check_ins(reservations, admin)
-    _seed_check_outs(reservations, admin)
-    _seed_payments(reservations, admin)
-    _seed_invoices(reservations, admin)
-    _seed_housekeeping(rooms)
-    _seed_maintenance(rooms)
-    _seed_banners()
-    _seed_services()
-    _seed_contact_messages()
-    _seed_notifications(admin)
-    _seed_settings()
-
-    db.session.commit()
-    print("Seed complete.")
-    print("  Admin login:    admin / admin123")
-    print("  Staff login:    reception / staff123")
-    print("  Guest login:    guest / guest123")
+    This function no longer inserts fake/demo data into the database. It is
+    kept only so existing imports do not break. The database should only
+    contain real data entered through the application.
+    """
+    print(
+        "seed_data() is disabled. Demo/fake data is no longer added to the "
+        "database."
+    )
+    return

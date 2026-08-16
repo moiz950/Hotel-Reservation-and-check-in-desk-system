@@ -114,6 +114,9 @@
                 <a href="{{ url_for('admin.content') }}" class="side-link {% if request.endpoint in ['admin.content', 'admin.hero_banners', 'admin.hero_banner_new', 'admin.hero_banner_edit', 'admin.promo_banners', 'admin.promo_banner_new', 'admin.promo_banner_edit', 'admin.branding', 'admin.branding_delete_logo', 'admin.branding_delete_favicon', 'admin.content_settings', 'admin.services', 'admin.service_new', 'admin.service_edit', 'admin.contact_messages'] %}active{% endif %}">
                     <span class="side-icon">◈</span> Content
                 </a>
+                <a href="{{ url_for('admin.about_content') }}" class="side-link {% if request.endpoint in ['admin.about_content', 'admin.about_content_new', 'admin.about_content_edit'] %}active{% endif %}">
+                    <span class="side-icon">📖</span> About Us
+                </a>
                 <a href="{{ url_for('admin.special_offers') }}" class="side-link {% if request.endpoint in ['admin.special_offers', 'admin.special_offer_new', 'admin.special_offer_edit', 'admin.special_offer_toggle', 'admin.special_offer_delete'] %}active{% endif %}">
                     <span class="side-icon">★</span> Special Offers
                 </a>

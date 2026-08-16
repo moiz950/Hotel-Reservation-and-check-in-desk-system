@@ -1,4 +1,5 @@
 """Helper functions used across the application."""
+import io
 import os
 import uuid
 from datetime import date, datetime, timedelta
@@ -153,8 +154,12 @@ def allowed_image(filename):
     return ext in current_app.config["ALLOWED_IMAGE_EXTENSIONS"]
 
 
-def save_upload(file_storage, subfolder="banners"):
+def save_upload(file_storage, subfolder="banners", max_size=None):
     """Securely save an uploaded image and return a web path.
+
+    When ``max_size`` is given as a ``(width, height)`` tuple, the image is
+    resized (preserving aspect ratio, never upscaled) so uploads stay visually
+    consistent regardless of the original file dimensions.
 
     Returns None when the upload is invalid.
     """
@@ -168,7 +173,28 @@ def save_upload(file_storage, subfolder="banners"):
     safe_name = secure_filename(f"{uuid.uuid4().hex}.{ext}")
     folder = os.path.join(current_app.config["UPLOAD_FOLDER"], subfolder)
     os.makedirs(folder, exist_ok=True)
-    file_storage.save(os.path.join(folder, safe_name))
+    dest_path = os.path.join(folder, safe_name)
+
+    if max_size:
+        try:
+            from PIL import Image
+
+            img = Image.open(file_storage.stream)
+            img = img.convert("RGBA" if ext in ("png", "webp") else "RGB")
+            img.thumbnail(max_size, Image.LANCZOS)
+            save_kwargs = {"optimize": True}
+            if ext in ("jpg", "jpeg"):
+                save_kwargs["quality"] = 90
+                img = img.convert("RGB")
+            elif ext == "webp":
+                save_kwargs["quality"] = 90
+            img.save(dest_path, format=ext.upper() if ext != "jpg" else "JPEG", **save_kwargs)
+            return f"/static/uploads/{subfolder}/{safe_name}"
+        except Exception:
+            # Fall back to saving the original file untouched if Pillow fails.
+            file_storage.stream.seek(0)
+
+    file_storage.save(dest_path)
     return f"/static/uploads/{subfolder}/{safe_name}"
 
 
