@@ -186,3 +186,45 @@ def register_cli(app):
             "added to the database. Use 'flask init-db' to create empty "
             "tables if needed."
         )
+
+    @app.cli.command("create-admin")
+    def create_admin_cmd():
+        """Create an administrator account (interactive).
+
+        Use this on a fresh deployment (e.g. PythonAnywhere) where no admin
+        exists yet. Prompts for username, email, full name and password.
+        If the username or email already exists, the existing account is
+        promoted to admin instead of creating a duplicate.
+        """
+        from app.models import User
+
+        username = click.prompt("Admin username", default="admin").strip()
+        email = click.prompt("Admin email", default="admin@hotel.com").strip().lower()
+        full_name = click.prompt("Admin full name", default="Administrator").strip()
+        password = click.prompt(
+            "Admin password", default="admin123", hide_input=True,
+            confirmation_prompt=True,
+        )
+
+        with app.app_context():
+            user = User.query.filter(
+                (User.username == username) | (User.email == email)
+            ).first()
+            if user:
+                user.role = "admin"
+                user.is_active_account = True
+                action = "promoted to admin"
+            else:
+                user = User(
+                    username=username,
+                    email=email,
+                    full_name=full_name,
+                    role="admin",
+                    is_active_account=True,
+                )
+                user.set_password(password)
+                db.session.add(user)
+                action = "created"
+
+            db.session.commit()
+            print(f"Admin account '{username}' {action} successfully.")
