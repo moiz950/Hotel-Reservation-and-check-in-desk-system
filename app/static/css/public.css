@@ -2067,3 +2067,209 @@ h6 {
         padding: 32px 24px;
     }
 }
+
+/* ===== Mobile responsiveness hardening ===== */
+/* Prevent any accidental horizontal scroll on small screens */
+html, body {
+    overflow-x: hidden;
+    width: 100%;
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+img, video, iframe, table {
+    max-width: 100%;
+}
+
+/* Fluid base typography so text never overflows tiny screens */
+body {
+    font-size: clamp(14px, 1rem + 0.2vw, 16px);
+}
+
+/* ---- Small phones (<= 480px) ---- */
+@media (max-width: 480px) {
+    .container {
+        padding: 0 16px;
+    }
+
+    .section {
+        padding: 48px 0;
+    }
+
+    .section-head {
+        margin-bottom: 32px;
+    }
+
+    .section-title {
+        font-size: clamp(24px, 7vw, 32px);
+    }
+
+    /* Header: shrink height, keep brand readable */
+    .header-inner {
+        height: 64px;
+    }
+
+    .brand-text strong {
+        font-size: 16px;
+    }
+
+    .brand-text small {
+        font-size: 9px;
+    }
+
+    .brand-logo {
+        height: 38px;
+    }
+
+    .brand-mark {
+        width: 38px;
+        height: 38px;
+        font-size: 15px;
+    }
+
+    /* Mobile nav panel sits below the shorter header */
+    .main-nav {
+        top: 64px;
+    }
+
+    /* Hero */
+    .hero {
+        height: 460px;
+    }
+
+    .hero-content {
+        min-height: 460px;
+        padding-top: 24px;
+        padding-bottom: 24px;
+    }
+
+    .hero-title {
+        font-size: clamp(30px, 9vw, 42px);
+    }
+
+    .hero-subtitle {
+        font-size: 17px;
+    }
+
+    .hero-description {
+        font-size: 15px;
+    }
+
+    .hero-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .hero-actions .btn {
+        width: 100%;
+    }
+
+    .reservation-bar {
+        margin-top: -28px;
+    }
+
+    .reservation-search {
+        padding: 18px;
+        gap: 14px;
+    }
+
+    /* Forms */
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .auth-card,
+    .confirmation-card {
+        padding: 28px 18px;
+    }
+
+    /* Footer */
+    .footer-grid {
+        grid-template-columns: 1fr;
+        gap: 28px;
+        padding: 48px 16px 36px;
+    }
+
+    /* Flash messages: keep on screen */
+    .flash-container {
+        left: 12px;
+        right: 12px;
+        max-width: none;
+    }
+
+    /* Reservation results list */
+    .available-room {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .available-room-media img,
+    .available-room-media .room-card-placeholder {
+        width: 100%;
+        height: 180px;
+    }
+
+    .available-room-price {
+        text-align: left;
+        align-items: flex-start;
+    }
+
+    /* Room detail media */
+    .room-detail-media img,
+    .room-detail-placeholder {
+        height: 280px;
+    }
+
+    /* CTA box */
+    .cta-box {
+        padding: 40px 22px;
+    }
+
+    /* Reduce huge horizontal paddings */
+    .contact-form-panel,
+    .booking-summary,
+    .reservation-search-panel {
+        padding: 22px 18px;
+    }
+}
+
+/* ---- Very small phones (<= 360px) ---- */
+@media (max-width: 360px) {
+    .hero-title {
+        font-size: 28px;
+    }
+
+    .btn {
+        padding: 12px 18px;
+        font-size: 13px;
+    }
+
+    .brand-text small {
+        display: none;
+    }
+}
+
+/* ---- Ensure tables scroll horizontally instead of breaking layout ---- */
+.table-responsive,
+.table-wrap {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* ---- Touch-friendly tap targets on mobile ---- */
+@media (hover: none) and (pointer: coarse) {
+    .nav-link,
+    .btn,
+    .footer-links a,
+    .flash-close {
+        min-height: 44px;
+    }
+
+    .nav-link {
+        display: flex;
+        align-items: center;
+    }
+}

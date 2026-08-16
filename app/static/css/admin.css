@@ -1898,3 +1898,75 @@ select.form-control {
         grid-template-columns: 1fr;
     }
 }
+
+/* ===== Admin mobile hardening ===== */
+html, body.admin-body {
+    overflow-x: hidden;
+    width: 100%;
+}
+
+/* Let wide data tables scroll horizontally instead of breaking the layout */
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.table {
+    min-width: 640px;
+}
+
+.table-responsive .table {
+    min-width: 640px;
+}
+
+/* Phones: stack the topbar actions and tighten spacing */
+@media (max-width: 640px) {
+    .admin-topbar {
+        flex-wrap: wrap;
+        gap: 8px;
+        height: auto;
+        padding: 10px 12px;
+    }
+
+    .topbar-actions {
+        width: 100%;
+        justify-content: flex-end;
+    }
+
+    .admin-content {
+        padding: 12px;
+    }
+
+    .panel {
+        margin-bottom: 16px;
+    }
+
+    .btn {
+        white-space: nowrap;
+    }
+
+    /* Prevent the sidebar from being too wide when open on small screens */
+    .admin-sidebar {
+        width: 80%;
+        max-width: 280px;
+    }
+
+    .stat-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .page-title {
+        font-size: 20px;
+    }
+}
+
+@media (max-width: 420px) {
+    .stat-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-content {
+        padding: 10px;
+    }
+}
