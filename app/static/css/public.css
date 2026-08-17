@@ -1996,6 +1996,24 @@ h6 {
         display: flex;
     }
 
+    /* The mobile dropdown panel has a white background, so override the
+       theme's forced white nav-link color (set in base.html) and render the
+       links in a dark, readable color. Otherwise they are white-on-white. */
+    .site-header .main-nav .nav-link,
+    .site-header .main-nav .nav-link.active,
+    .site-header .main-nav .nav-link:hover {
+        color: var(--navy);
+    }
+
+    .site-header .main-nav .nav-link::after {
+        background: var(--gold);
+    }
+
+    /* Keep the hamburger visible regardless of the admin theme color */
+    .site-header .nav-toggle span {
+        background: var(--navy);
+    }
+
     .nav-cta {
         width: 100%;
         justify-content: center;
@@ -2070,16 +2088,22 @@ h6 {
 
 /* ===== Mobile responsiveness hardening ===== */
 /* Prevent any accidental horizontal scroll on small screens */
-html, body {
+html,
+body {
     overflow-x: hidden;
     width: 100%;
 }
 
-*, *::before, *::after {
+*,
+*::before,
+*::after {
     box-sizing: border-box;
 }
 
-img, video, iframe, table {
+img,
+video,
+iframe,
+table {
     max-width: 100%;
 }
 
@@ -2261,6 +2285,7 @@ body {
 
 /* ---- Touch-friendly tap targets on mobile ---- */
 @media (hover: none) and (pointer: coarse) {
+
     .nav-link,
     .btn,
     .footer-links a,
